@@ -11,6 +11,9 @@ dependencies:
   chalk:
     specifier: 4.1.2
     version: 4.1.2
+  dayjs:
+    specifier: ^1.11.10
+    version: 1.11.10
   dotenv:
     specifier: ^16.0.3
     version: 16.0.3
@@ -293,6 +296,10 @@ packages:
       node-fetch: 2.6.7
     transitivePeerDependencies:
       - encoding
+    dev: false
+
+  /dayjs@1.11.10:
+    resolution: {integrity: sha512-vjAczensTgRcqDERK0SR2XMwsF/tSvnvlv6VcF2GIhg6Sx4yOIt/irsr1RDJsKiIyBzJDpCoXiWWq28MqH2cnQ==}
     dev: false
 
   /debug@4.3.4:

@@ -6,7 +6,7 @@ Swish 🏀 is a complete system for automating the publication of French basketb
 
 This project is mantained by:
 
-- [Baptiste LECHAT - baptistelechat](https://github.com/baptistelechat)
+- [Baptiste et Matthieu LECHAT](https://github.com/baptistelechat)
 
 ## 👨‍💻👩‍💻 Contributing
 
