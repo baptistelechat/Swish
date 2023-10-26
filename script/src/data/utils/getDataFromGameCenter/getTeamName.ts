@@ -21,11 +21,11 @@ export const getAwayTeamName = async (page: Page) => {
     const gameElements = Array.from(document.querySelectorAll(".game-result"));
 
     return gameElements.map((gameElement) => {
-      // Home team name
-      const HomeTeamNameElement = gameElement.querySelector(
+      // Away team name
+      const AwayTeamNameElement = gameElement.querySelector(
         ".road_team"
       ) as HTMLDivElement;
-      return HomeTeamNameElement ? HomeTeamNameElement.innerText.trim() : null;
+      return AwayTeamNameElement ? AwayTeamNameElement.innerText.trim() : null;
     });
   });
 };

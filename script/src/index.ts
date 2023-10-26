@@ -8,11 +8,14 @@ import { scrapedUrl } from "./data/constants/scrapedUrl";
 import { cronScheduleEveryMinute } from "./data/constants/cronSchedule";
 import { getCurrentTimestamp } from "./data/utils/getCurrentTimestamp";
 import { getGamesData } from "./data/utils/getGamesData";
+import { retryDelay } from "./data/utils/retryDelay";
 
 // Load environment variables from .env file
 dotenv.config();
 
-const scrapePages = async (urls: IUrl[]) => {
+const maxRetries = 3;
+
+const scrapePages = async (urls: IUrl[], retries = 0) => {
   const timestamp = getCurrentTimestamp();
 
   console.log("");
@@ -48,9 +51,22 @@ const scrapePages = async (urls: IUrl[]) => {
     console.log("");
   } catch (error) {
     console.error(chalk.bgRed("Scraping failed:", error));
-
     if (browser) {
       await browser.close();
+    }
+
+    if (retries < maxRetries) {
+      console.log(
+        `Retrying after ${retryDelay(0, 0, 10) / 1000} seconds... (${
+          retries + 1
+        }/${maxRetries})`
+      );
+      await new Promise((resolve) => setTimeout(resolve, retryDelay(0, 0, 10)));
+      await scrapePages(urls, retries + 1);
+    } else {
+      console.error(chalk.bgRed("Max retries reached. Exiting..."));
+      // Forcefully exit the script with a non-zero exit code
+      process.exit(1);
     }
   }
 };

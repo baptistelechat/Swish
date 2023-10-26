@@ -10,26 +10,41 @@ import {
   getHomeTeamName,
 } from "./getDataFromGameCenter/getTeamName";
 import { getGameDay, getGameHour } from "./getDataFromGameCenter/getGameDate";
+import {
+  getAwayTeamLogo,
+  getHomeTeamLogo,
+} from "./getDataFromGameCenter/getTeamLogo";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 export const getGamesData = async (page: Page) => {
-  const [dates, times, championshipDays, homeTeamNames, awayTeamNames] =
-    await Promise.all([
-      getGameDay(page),
-      getGameHour(page),
-      getChampionshipDayNumber(page),
-      getHomeTeamName(page),
-      getAwayTeamName(page),
-    ]);
+  const [
+    dates,
+    times,
+    championshipDays,
+    homeTeamNames,
+    homeTeamLogos,
+    awayTeamNames,
+    awayTeamLogos,
+  ] = await Promise.all([
+    getGameDay(page),
+    getGameHour(page),
+    getChampionshipDayNumber(page),
+    getHomeTeamName(page),
+    getHomeTeamLogo(page),
+    getAwayTeamName(page),
+    getAwayTeamLogo(page),
+  ]);
 
   const convertedGames: IGame[] = dates.map((date, index) => {
     const time = times[index];
     const championshipDay = championshipDays[index];
     const homeTeamName = homeTeamNames[index];
+    const homeTeamLogo = homeTeamLogos[index];
     const awayTeamName = awayTeamNames[index];
+    const awayTeamLogo = awayTeamLogos[index];
 
     return {
       date: date
@@ -43,9 +58,11 @@ export const getGamesData = async (page: Page) => {
       championshipDayNumber: championshipDay ? Number(championshipDay) : null,
       home: {
         name: homeTeamName,
+        logo: homeTeamLogo,
       },
       away: {
         name: awayTeamName,
+        logo: awayTeamLogo,
       },
     };
   });
