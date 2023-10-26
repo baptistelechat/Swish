@@ -1,8 +1,6 @@
 import { Page } from "puppeteer";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
 import { IGame } from "../interfaces/IGame";
 import { getChampionshipDayNumber } from "./getDataFromGameCenter/getChampionshipDayNumber";
 import {
@@ -16,8 +14,6 @@ import {
 } from "./getDataFromGameCenter/getTeamLogo";
 
 dayjs.extend(customParseFormat);
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 export const getGamesData = async (page: Page) => {
   const [
@@ -51,8 +47,6 @@ export const getGamesData = async (page: Page) => {
         ? dayjs(date, "DD.MM.YYYY")
             .hour(time.hours)
             .minute(time.minutes)
-            .utc()
-            .tz("Europe/Paris")
             .toDate()
         : null,
       championshipDayNumber: championshipDay ? Number(championshipDay) : null,
