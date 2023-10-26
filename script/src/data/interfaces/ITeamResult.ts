@@ -1,4 +1,4 @@
 export interface ITeamResult {
-  name: string;
-  score: number;
+  name: string | null;
+  // score: number | null;
 }
