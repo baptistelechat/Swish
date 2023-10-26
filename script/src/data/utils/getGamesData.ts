@@ -2,68 +2,35 @@ import { Page } from "puppeteer";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { IGame } from "../interfaces/IGame";
+import { getChampionshipDayNumber } from "./getDataFromGameCenter/getChampionshipDayNumber";
+import { getGamesDay } from "./getDataFromGameCenter/getGameDay";
+import { getGameHour } from "./getDataFromGameCenter/getGameHour";
 
 dayjs.extend(customParseFormat);
 
 export const getGamesData = async (page: Page) => {
-  const games = await page.evaluate(() => {
-    // All games elements
-    const gameElements = Array.from(document.querySelectorAll(".game-result"));
+  const [dates, times, championshipDays] = await Promise.all([
+    getGamesDay(page),
+    getGameHour(page),
+    getChampionshipDayNumber(page),
+  ]);
 
-    return gameElements.map((gameElement) => {
-      // Championship Day
-      const championshipDayNumber = () => {
-        const championshipDayNumberElement = gameElement.querySelector(
-          ".championship-day"
-        ) as HTMLDivElement;
-        return championshipDayNumberElement
-          ? championshipDayNumberElement.innerText
-              .trim()
-              .split("ÈRE")[0]
-              .split("ÈME")[0]
-          : null;
-      };
+  const convertedGames: IGame[] = dates.map((date, index) => {
+    const time = times[index];
+    const championshipDay = championshipDays[index];
 
-      // Game day
-      const date = () => {
-        const dateElements = gameElement.querySelector(
-          ".championship-day"
-        ) as HTMLDivElement;
-        const dateString = dateElements.innerText.trim().split(" - ")[1];
-
-        return dateElements ? dateString : null;
-      };
-
-      // Game hour
-      const time = () => {
-        const timeElements = gameElement.querySelector(
-          ".hour > a"
-        ) as HTMLSpanElement;
-
-        const [hours, minutes] = timeElements.innerHTML.split(":").map(Number);
-        return { hours, minutes };
-      };
-
-      // Return raw dato
-      return {
-        date: date(),
-        time: time(),
-        championshipDay: championshipDayNumber(),
-      };
-    });
+    return {
+      date: date
+        ? dayjs(date, "DD.MM.YYYY")
+            .set("hours", time.hours)
+            .set("minutes", time.minutes)
+            .add(1, "day")
+            .add(1, "hour")
+            .toDate()
+        : null,
+      championshipDayNumber: championshipDay ? Number(championshipDay) : null,
+    };
   });
-
-  const convertedGames: IGame[] = games.map((game) => ({
-    date: game.date
-      ? dayjs(game.date, "DD.MM.YYYY")
-          .set("hours", game.time.hours)
-          .set("minutes", game.time.minutes)
-          .add(1, "day")
-          .add(1, "hour")
-          .toDate()
-      : null,
-    championshipDayNumber: game.championshipDay ? Number(game.championshipDay) : null,
-  }));
 
   console.log(convertedGames);
 
