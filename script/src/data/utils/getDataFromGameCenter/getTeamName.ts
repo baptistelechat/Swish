@@ -10,6 +10,7 @@ export const getHomeTeamName = async (page: Page) => {
       const HomeTeamNameElement = gameElement.querySelector(
         ".home_team"
       ) as HTMLDivElement;
+
       return HomeTeamNameElement ? HomeTeamNameElement.innerText.trim() : null;
     });
   });
@@ -25,6 +26,7 @@ export const getAwayTeamName = async (page: Page) => {
       const AwayTeamNameElement = gameElement.querySelector(
         ".road_team"
       ) as HTMLDivElement;
+      
       return AwayTeamNameElement ? AwayTeamNameElement.innerText.trim() : null;
     });
   });

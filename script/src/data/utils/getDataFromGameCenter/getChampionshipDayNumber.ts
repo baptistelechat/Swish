@@ -9,12 +9,17 @@ export const getChampionshipDayNumber = async (page: Page) => {
       const championshipDayNumberElement = gameElement.querySelector(
         ".championship-day"
       ) as HTMLDivElement;
-      return championshipDayNumberElement
-        ? championshipDayNumberElement.innerText
-            .trim()
-            .split("ÈRE")[0]
-            .split("ÈME")[0]
-        : null;
+
+      if (championshipDayNumberElement) {
+        const championshipDayNumber = championshipDayNumberElement.innerText
+          .trim()
+          .split("ÈRE")[0]
+          .split("ÈME")[0];
+
+        return championshipDayNumber;
+      }
+      
+      return null;
     });
   });
 };

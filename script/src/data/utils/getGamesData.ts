@@ -2,66 +2,44 @@ import { Page } from "puppeteer";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { IGame } from "../interfaces/IGame";
-import { getChampionshipDayNumber } from "./getDataFromGameCenter/getChampionshipDayNumber";
-import {
-  getAwayTeamName,
-  getHomeTeamName,
-} from "./getDataFromGameCenter/getTeamName";
-import { getGameDay, getGameHour } from "./getDataFromGameCenter/getGameDate";
-import {
-  getAwayTeamLogo,
-  getHomeTeamLogo,
-} from "./getDataFromGameCenter/getTeamLogo";
+import { getGameDetails } from "./getGameDetails";
+import { getGamesWithoutDetails } from "./getGamesWithoutDetails";
+import chalk from "chalk";
+import { getProgress } from "./getProgress";
 
 dayjs.extend(customParseFormat);
 
 export const getGamesData = async (page: Page) => {
-  const [
-    dates,
-    times,
-    championshipDays,
-    homeTeamNames,
-    homeTeamLogos,
-    awayTeamNames,
-    awayTeamLogos,
-  ] = await Promise.all([
-    getGameDay(page),
-    getGameHour(page),
-    getChampionshipDayNumber(page),
-    getHomeTeamName(page),
-    getHomeTeamLogo(page),
-    getAwayTeamName(page),
-    getAwayTeamLogo(page),
-  ]);
+  const gamesWithoutDetails = await getGamesWithoutDetails(page);
 
-  const convertedGames: IGame[] = dates.map((date, index) => {
-    const time = times[index];
-    const championshipDay = championshipDays[index];
-    const homeTeamName = homeTeamNames[index];
-    const homeTeamLogo = homeTeamLogos[index];
-    const awayTeamName = awayTeamNames[index];
-    const awayTeamLogo = awayTeamLogos[index];
+  // TODO Enregistrement Notion + Créer tache CRON
 
-    return {
-      date: date
-        ? dayjs(date, "DD.MM.YYYY")
-            .hour(time.hours)
-            .minute(time.minutes)
-            .toDate()
-        : null,
-      championshipDayNumber: championshipDay ? Number(championshipDay) : null,
-      home: {
-        name: homeTeamName,
-        logo: homeTeamLogo,
-      },
-      away: {
-        name: awayTeamName,
-        logo: awayTeamLogo,
-      },
-    };
-  });
+  const gameDetails = await getGameDetails(page);
 
-  console.log(convertedGames);
+  const gamesData: IGame[] = gamesWithoutDetails.map(
+    (gamesWithoutDetails, index) => {
+      const gameDetail = gameDetails[index];
 
-  return convertedGames;
+      const { date, championshipDayNumber, home, away } = gamesWithoutDetails;
+      const { location, score } = gameDetail;
+
+      const gameData: IGame = {
+        date,
+        championshipDayNumber,
+        home,
+        away,
+        location,
+        score,
+      };
+
+      const progress = getProgress(gameData);
+      console.log(chalk.bgBlue(progress));
+
+      return gameData;
+    }
+  );
+
+  // console.log(gamesData);
+
+  return gamesData;
 };

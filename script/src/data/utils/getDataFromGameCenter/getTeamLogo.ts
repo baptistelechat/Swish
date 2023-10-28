@@ -11,11 +11,15 @@ export const getHomeTeamLogo = async (page: Page) => {
         ".left .logo>img"
       ) as HTMLImageElement;
 
-      const sm = HomeTeamLogoElement.src;
-      const md = HomeTeamLogoElement.src.replace("sm", "md");
-      const lg = HomeTeamLogoElement.src.replace("sm", "lg");
+      if (HomeTeamLogoElement) {
+        const sm = HomeTeamLogoElement.src;
+        const md = HomeTeamLogoElement.src.replace("sm", "md");
+        const lg = HomeTeamLogoElement.src.replace("sm", "lg");
 
-      return HomeTeamLogoElement ? { sm, md, lg } : null;
+        return { sm, md, lg };
+      }
+
+      return null;
     });
   });
 };
@@ -30,12 +34,16 @@ export const getAwayTeamLogo = async (page: Page) => {
       const AwayTeamLogoElement = gameElement.querySelector(
         ".right .logo>img"
       ) as HTMLImageElement;
-      
-      const sm = AwayTeamLogoElement.src;
-      const md = AwayTeamLogoElement.src.replace("sm", "md");
-      const lg = AwayTeamLogoElement.src.replace("sm", "lg");
 
-      return AwayTeamLogoElement ? { sm, md, lg } : null;
+      if (AwayTeamLogoElement) {
+        const sm = AwayTeamLogoElement.src;
+        const md = AwayTeamLogoElement.src.replace("sm", "md");
+        const lg = AwayTeamLogoElement.src.replace("sm", "lg");
+
+        return { sm, md, lg };
+      }
+
+      return null;
     });
   });
 };

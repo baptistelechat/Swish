@@ -7,11 +7,17 @@ export const getGameDay = async (page: Page) => {
 
     return gameElements.map((gameElement) => {
       // Game day
-      const dateElements = gameElement.querySelector(
+      const dateElement = gameElement.querySelector(
         ".championship-day"
       ) as HTMLDivElement;
-      const dateString = dateElements.innerText.trim().split(" - ")[1];
-      return dateElements ? dateString : null;
+
+      if (dateElement) {
+        const date = dateElement.innerText.trim().split(" - ")[1];
+
+        return date;
+      }
+
+      return null;
     });
   });
 };
@@ -23,12 +29,15 @@ export const getGameHour = async (page: Page) => {
 
     return gameElements.map((gameElement) => {
       // Game hour
-      const timeElements = gameElement.querySelector(
+      const timeElement = gameElement.querySelector(
         ".hour > a"
-      ) as HTMLSpanElement;
+      ) as HTMLAnchorElement;
 
-      const [hours, minutes] = timeElements.innerHTML.split(":").map(Number);
-      return { hours, minutes };
+      if (timeElement) {
+        const [hours, minutes] = timeElement.innerHTML.split(":").map(Number);
+        return { hours, minutes };
+      }
+      return { hours: 0, minutes: 0 };
     });
   });
 };
