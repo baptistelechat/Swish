@@ -6,7 +6,7 @@ import chalk from "chalk";
 import { IUrl } from "./data/interfaces/IUrl";
 import { scrapedUrl } from "./data/constants/scrapedUrl";
 import { getCurrentTimestamp } from "./data/utils/getCurrentTimestamp";
-import { getGamesData } from "./data/utils/getGamesData";
+import { getGamesData } from "./data/utils/gameData/getGamesData";
 import { retryDelay } from "./data/utils/retryDelay";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -107,6 +107,10 @@ const launchScraping = async () => {
   // console.log(chalk.bgYellow(`⌛ ${minute + 1} ${hour} * * *`));
 
   // cron.schedule(`${minute + 1} ${hour} * * *`, async () => {
+  //   launchScraping();
+  // });
+
+  // cron.schedule("*/2 * * * *", async () => {
   //   launchScraping();
   // });
 })();

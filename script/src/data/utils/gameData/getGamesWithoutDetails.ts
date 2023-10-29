@@ -1,15 +1,15 @@
 import dayjs from "dayjs";
-import { IGameWithoutDetails } from "../interfaces/IGame";
-import { getChampionshipDayNumber } from "./getDataFromGameCenter/getChampionshipDayNumber";
-import { getGameDay, getGameHour } from "./getDataFromGameCenter/getGameDate";
+import { IGameWithoutDetails } from "../../interfaces/IGame";
+import { getChampionshipDayNumber } from "../getDataFromGameCenter/getChampionshipDayNumber";
+import { getGameDay, getGameHour } from "../getDataFromGameCenter/getGameDate";
 import {
   getHomeTeamLogo,
   getAwayTeamLogo,
-} from "./getDataFromGameCenter/getTeamLogo";
+} from "../getDataFromGameCenter/getTeamLogo";
 import {
   getHomeTeamName,
   getAwayTeamName,
-} from "./getDataFromGameCenter/getTeamName";
+} from "../getDataFromGameCenter/getTeamName";
 import { Page } from "puppeteer";
 
 export const getGamesWithoutDetails = async (page: Page) => {

@@ -1,8 +1,8 @@
 import { Page } from "puppeteer";
-import { getLocation } from "./getDataFromMatchLink/getLocation";
-import { IGameDetails } from "../interfaces/IGame";
-import { getScore } from "./getDataFromMatchLink/getScore";
-import { getMatchLink } from "./getDataFromGameCenter/getMatchLink";
+import { getLocation } from "../getDataFromMatchLink/getLocation";
+import { IGameDetails } from "../../interfaces/IGame";
+import { getScore } from "../getDataFromMatchLink/getScore";
+import { getMatchLink } from "../getDataFromGameCenter/getMatchLink";
 
 export const getGameDetails = async (page: Page) => {
   const [matchLinks] = await Promise.all([getMatchLink(page)]);
@@ -24,6 +24,8 @@ export const getGameDetails = async (page: Page) => {
         location,
         score,
       };
+
+      console.log(gameDetail)
 
       gameDetails.push(gameDetail);
     } else {
@@ -60,8 +62,8 @@ export const getGameDetails = async (page: Page) => {
             away: null,
           },
           final: {
-            home: matchLinks[index].final.home,
-            away: matchLinks[index].final.away,
+            home: matchLinks[index].final ? matchLinks[index].final.home : null,
+            away: matchLinks[index].final ? matchLinks[index].final.away : null,
           },
         },
       });

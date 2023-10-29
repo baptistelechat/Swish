@@ -3,7 +3,11 @@ import { IScore } from "../../interfaces/IScore";
 import { TPeriod } from "../../interfaces/TPeriod";
 
 export const getScore = async (page: Page) => {
-  await page.waitForSelector(".period-scores-desktop > div");
+  await Promise.race([
+    page.waitForSelector(".period-scores-desktop > div"),
+    page.waitForSelector("span.location"),
+  ]);
+  
   return await page.evaluate(() => {
     // Score
     const scoreContainerElement = document.querySelector(
@@ -16,9 +20,9 @@ export const getScore = async (page: Page) => {
       ".game-clock-time-value"
     );
 
-    const scoreElement = document.querySelector("div.score");
+    const locationSpan = document.querySelector("span.location");
 
-    if (scoreElement) {
+    if (locationSpan) {
       return {
         period: "Live",
         q1: {
@@ -26,32 +30,32 @@ export const getScore = async (page: Page) => {
           away: 0,
         },
         q2: {
-          home: 0,
-          away: 0,
+          home: null,
+          away: null,
         },
         q3: {
-          home: 0,
-          away: 0,
+          home: null,
+          away: null,
         },
         q4: {
-          home: 0,
-          away: 0,
+          home: null,
+          away: null,
         },
         ot1: {
-          home: 0,
-          away: 0,
+          home: null,
+          away: null,
         },
         ot2: {
-          home: 0,
-          away: 0,
+          home: null,
+          away: null,
         },
         ot3: {
-          home: 0,
-          away: 0,
+          home: null,
+          away: null,
         },
         final: {
-          home: 0,
-          away: 0,
+          home: null,
+          away: null,
         },
       } as IScore;
     }
@@ -120,36 +124,36 @@ export const getScore = async (page: Page) => {
       const score: IScore = {
         period: currentPeriod(),
         q1: {
-          home: q1Home ? Number(q1Home.innerHTML) : 0,
-          away: q1Away ? Number(q1Away.innerHTML) : 0,
+          home: q1Home ? Number(q1Home.innerHTML) : null,
+          away: q1Away ? Number(q1Away.innerHTML) : null,
         },
         q2: {
-          home: q2Home ? Number(q2Home.innerHTML) : 0,
-          away: q2Away ? Number(q2Away.innerHTML) : 0,
+          home: q2Home ? Number(q2Home.innerHTML) : null,
+          away: q2Away ? Number(q2Away.innerHTML) : null,
         },
         q3: {
-          home: q3Home ? Number(q3Home.innerHTML) : 0,
-          away: q3Away ? Number(q3Away.innerHTML) : 0,
+          home: q3Home ? Number(q3Home.innerHTML) : null,
+          away: q3Away ? Number(q3Away.innerHTML) : null,
         },
         q4: {
-          home: q4Home ? Number(q4Home.innerHTML) : 0,
-          away: q4Away ? Number(q4Away.innerHTML) : 0,
+          home: q4Home ? Number(q4Home.innerHTML) : null,
+          away: q4Away ? Number(q4Away.innerHTML) : null,
         },
         ot1: {
-          home: ot1Home ? Number(ot1Home.innerHTML) : 0,
-          away: ot1Away ? Number(ot1Away.innerHTML) : 0,
+          home: ot1Home ? Number(ot1Home.innerHTML) : null,
+          away: ot1Away ? Number(ot1Away.innerHTML) : null,
         },
         ot2: {
-          home: ot2Home ? Number(ot2Home.innerHTML) : 0,
-          away: ot2Away ? Number(ot2Away.innerHTML) : 0,
+          home: ot2Home ? Number(ot2Home.innerHTML) : null,
+          away: ot2Away ? Number(ot2Away.innerHTML) : null,
         },
         ot3: {
-          home: ot3Home ? Number(ot3Home.innerHTML) : 0,
-          away: ot3Away ? Number(ot3Away.innerHTML) : 0,
+          home: ot3Home ? Number(ot3Home.innerHTML) : null,
+          away: ot3Away ? Number(ot3Away.innerHTML) : null,
         },
         final: {
-          home: 0,
-          away: 0,
+          home: null,
+          away: null,
         },
       };
 

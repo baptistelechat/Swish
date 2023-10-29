@@ -1,9 +1,9 @@
 import { Page } from "puppeteer";
-import { IGame } from "../interfaces/IGame";
+import { IGame } from "../../interfaces/IGame";
+import dayjs from "dayjs";
 
-export const getProgress = (
-  gameData: IGame
-): string => {
+export const getProgress = (gameData: IGame): string => {
+  const date = gameData.date;
   const homeTeam = gameData.home.name;
   const awayTeam = gameData.away.name;
   const q1Home = gameData.score?.q1.home;
@@ -18,6 +18,8 @@ export const getProgress = (
   const ot1Away = gameData.score?.ot1.away;
   const ot2Home = gameData.score?.ot2.home;
   const ot2Away = gameData.score?.ot2.away;
+  const ot3Home = gameData.score?.ot3.home;
+  const ot3Away = gameData.score?.ot3.away;
   const finalHome = gameData.score?.final.home;
   const finalAway = gameData.score?.final.away;
   const period = gameData.score?.period;
@@ -41,12 +43,14 @@ export const getProgress = (
       ot1Home &&
       ot1Away &&
       ot2Home &&
-      ot2Away
+      ot2Away &&
+      ot3Home &&
+      ot3Away
     ) {
-      return `🏀 Fin de la prolongation 2 (OT3 en cours) - ${homeTeam} (${
-        q1Home + q2Home + q3Home + q4Home + ot1Home + ot2Home
+      return `🏀 3ème prolongation en cours - ${homeTeam} (${
+        q1Home + q2Home + q3Home + q4Home + ot1Home + ot2Home + ot3Home
       }) - ${awayTeam} (${
-        q1Away + q2Away + q3Away + q4Away + ot1Away + ot2Away
+        q1Away + q2Away + q3Away + q4Away + ot1Away + ot2Away + ot3Away
       })`;
     }
   }
@@ -62,11 +66,15 @@ export const getProgress = (
       q4Home &&
       q4Away &&
       ot1Home &&
-      ot1Away
+      ot1Away &&
+      ot2Home &&
+      ot2Away
     ) {
-      return `🏀 Fin de la prolongation 1 (OT2 en cours) - ${homeTeam} (${
-        q1Home + q2Home + q3Home + q4Home + ot1Home
-      }) - ${awayTeam} (${q1Away + q2Away + q3Away + q4Away + ot1Away})`;
+      return `🏀 2ème prolongation en cours - ${homeTeam} (${
+        q1Home + q2Home + q3Home + q4Home + ot1Home + ot2Home
+      }) - ${awayTeam} (${
+        q1Away + q2Away + q3Away + q4Away + ot1Away + ot2Away
+      })`;
     }
   }
 
@@ -79,18 +87,36 @@ export const getProgress = (
       q3Home &&
       q3Away &&
       q4Home &&
-      q4Away
+      q4Away &&
+      ot1Home &&
+      ot1Away
     ) {
-      return `🏀 Fin du 4ème quart-temps (OT1 en cours) - ${homeTeam} (${
-        q1Home + q2Home + q3Home + q4Home
-      }) - ${awayTeam} (${q1Away + q2Away + q3Away + q4Away})`;
+      return `🏀 1ère prolongation en cours - ${homeTeam} (${
+        q1Home + q2Home + q3Home + q4Home + ot1Home
+      }) - ${awayTeam} (${q1Away + q2Away + q3Away + q4Away + ot1Away})`;
     }
   }
 
   // 3ème quart-temps
   if (period === "Q4") {
+    if (
+      q1Home &&
+      q1Away &&
+      q2Home &&
+      q2Away &&
+      q3Home &&
+      q3Away &&
+      q4Home &&
+      q4Away
+    ) {
+      return `🏀 4ème quart-temps en cours - ${homeTeam} (${
+        q1Home + q2Home + q3Home + q4Home
+      }) - ${awayTeam} (${q1Away + q2Away + q3Away + q4Away})`;
+    }
+  }
+  if (period === "Q3") {
     if (q1Home && q1Away && q2Home && q2Away && q3Home && q3Away) {
-      return `🏀 Fin du 3ème quart-temps (Q4 en cours) - ${homeTeam} (${
+      return `🏀 3ème quart-temps en cours - ${homeTeam} (${
         q1Home + q2Home + q3Home
       }) - ${awayTeam} (${q1Away + q2Away + q3Away})`;
     }
@@ -107,9 +133,28 @@ export const getProgress = (
 
   // 1er quart-temps
   if (period === "Q2") {
-    if (q1Home && q1Away) {
-      return `🏀 Fin du 1er quart-temps (Q2 en cours) - ${homeTeam} (${q1Home}) - ${awayTeam} (${q1Away})`;
+    if (q1Home && q1Away && q2Home && q2Away) {
+      return `🏀 2ème quart-temps en cours - ${homeTeam} (${
+        q1Home + q2Home
+      }) - ${awayTeam} (${q1Away + q2Away})`;
     }
+  }
+  if (period === "Q1") {
+    if (q1Home && q1Away) {
+      return `🏀 1er quart-temps en cours - ${homeTeam} (${q1Home}) - ${awayTeam} (${q1Away})`;
+    }
+  }
+
+  // A venir
+  if (period === "A venir") {
+    return `🏀 Match à venir (${dayjs(date).hour()}:${dayjs(
+      date
+    ).minute()}) - ${homeTeam} - ${awayTeam}`;
+  }
+
+  // Live
+  if (period === "Live") {
+    return `🏀 Match en cours - ${homeTeam} - ${awayTeam}`;
   }
 
   return "⌛🏀⌛🏀⌛🏀⌛";

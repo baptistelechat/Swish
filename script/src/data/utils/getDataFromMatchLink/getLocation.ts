@@ -1,7 +1,10 @@
 import { Page } from "puppeteer";
 
 export const getLocation = async (page: Page) => {
-  await page.waitForSelector(".sw-fixture-info-summary");
+  await Promise.race([
+    page.waitForSelector(".sw-fixture-info-summary"),
+    page.waitForSelector("span.location"),
+  ]);
 
   return await page.evaluate(() => {
     // Location
@@ -9,6 +12,10 @@ export const getLocation = async (page: Page) => {
       ".sw-fixture-info-summary"
     ) as HTMLSpanElement;
 
+    const locationSpan = document.querySelector("span.location");
+    if (locationSpan) {
+      return locationSpan.innerHTML.trim();
+    }
     if (locationElement) {
       const location = locationElement.innerHTML
         .trim()
