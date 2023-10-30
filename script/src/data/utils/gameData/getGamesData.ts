@@ -8,18 +8,15 @@ import chalk from "chalk";
 import { getProgress } from "./getProgress";
 import addNewGame from "../notion/addNewGame";
 import updateGame from "../notion/updateGame";
-import cron from "node-cron";
 
 dayjs.extend(customParseFormat);
 
 export const getGamesData = async (page: Page) => {
   const gamesWithoutDetails = await getGamesWithoutDetails(page);
 
-  gamesWithoutDetails.map((game) => {
-    addNewGame(game);
+  gamesWithoutDetails.map(async (game) => {
+    await addNewGame(game);
   });
-
-  // TODO Créer tache CRON pour le début du match
 
   const gameDetails = await getGameDetails(page);
 
@@ -39,7 +36,9 @@ export const getGamesData = async (page: Page) => {
         score,
       };
 
-      updateGame(gameData);
+      if (location) {
+        updateGame(gameData);
+      }
 
       const progress = getProgress(gameData);
       console.log(chalk.bgBlue(progress));
@@ -50,5 +49,5 @@ export const getGamesData = async (page: Page) => {
 
   // console.log(gamesData);
 
-  // return gamesData;
+  return gamesData;
 };

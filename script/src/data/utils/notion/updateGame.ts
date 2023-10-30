@@ -31,31 +31,32 @@ const updateGame = async (game: IGame) => {
   const matchId = getMatchId(game);
 
   const page = (await getPageByMatch(matchId)).page as any;
-  const properties = page.properties;
+  const matchExist = (await getPageByMatch(matchId)).exist;
 
-  await updatePeriod(notion, page, game.score?.period);
-
-  if (properties.Lieu.rich_text.length === 0) {
-    await updateLocation(notion, page, game.location);
-  }
-
-  if (game.score?.period !== "Fin") {
-    // Home
-    await updateQ1Home(notion, page, game.score?.q1.home);
-    await updateQ2Home(notion, page, game.score?.q2.home);
-    await updateQ3Home(notion, page, game.score?.q3.home);
-    await updateQ4Home(notion, page, game.score?.q4.home);
-    await updateOT1Home(notion, page, game.score?.ot1.home);
-    await updateOT2Home(notion, page, game.score?.ot2.home);
-    await updateOT3Home(notion, page, game.score?.ot3.home);
-    // Away
-    await updateQ1Away(notion, page, game.score?.q1.away);
-    await updateQ2Away(notion, page, game.score?.q2.away);
-    await updateQ3Away(notion, page, game.score?.q3.away);
-    await updateQ4Away(notion, page, game.score?.q4.away);
-    await updateOT1Away(notion, page, game.score?.ot1.away);
-    await updateOT2Away(notion, page, game.score?.ot2.away);
-    await updateOT3Away(notion, page, game.score?.ot3.away);
+  if (matchExist) {
+    const properties = page.properties;
+    await updatePeriod(notion, page, game.score?.period);
+    if (properties.Lieu.rich_text.length === 0) {
+      await updateLocation(notion, page, game.location);
+    }
+    if (game.score?.period !== "Fin") {
+      // Home
+      await updateQ1Home(notion, page, game.score?.q1.home);
+      await updateQ2Home(notion, page, game.score?.q2.home);
+      await updateQ3Home(notion, page, game.score?.q3.home);
+      await updateQ4Home(notion, page, game.score?.q4.home);
+      await updateOT1Home(notion, page, game.score?.ot1.home);
+      await updateOT2Home(notion, page, game.score?.ot2.home);
+      await updateOT3Home(notion, page, game.score?.ot3.home);
+      // Away
+      await updateQ1Away(notion, page, game.score?.q1.away);
+      await updateQ2Away(notion, page, game.score?.q2.away);
+      await updateQ3Away(notion, page, game.score?.q3.away);
+      await updateQ4Away(notion, page, game.score?.q4.away);
+      await updateOT1Away(notion, page, game.score?.ot1.away);
+      await updateOT2Away(notion, page, game.score?.ot2.away);
+      await updateOT3Away(notion, page, game.score?.ot3.away);
+    }
   }
 };
 

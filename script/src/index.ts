@@ -10,6 +10,7 @@ import { getGamesData } from "./data/utils/gameData/getGamesData";
 import { retryDelay } from "./data/utils/retryDelay";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import getPageAfterNow from "./data/utils/notion/getPageAfterNow";
 
 dayjs.extend(customParseFormat);
 
@@ -18,7 +19,7 @@ dotenv.config();
 
 const maxRetries = 3;
 
-const scrapePages = async (urls: IUrl[], retries = 0) => {
+const launchScraping = async (retries = 0) => {
   const timestamp = getCurrentTimestamp();
 
   console.log("");
@@ -36,9 +37,11 @@ const scrapePages = async (urls: IUrl[], retries = 0) => {
     });
     const page = await browser.newPage();
 
+    const url = scrapedUrl[1];
+
     // Go to Game center
-    await page.goto(scrapedUrl[0].path);
-    console.log(`Navigated to ${scrapedUrl[0].id}`);
+    await page.goto(url.path);
+    console.log(`Navigated to ${url.id}`);
 
     // Attendre que la div avec l'id game-center-result soit visible
     await page.waitForSelector(
@@ -66,11 +69,13 @@ const scrapePages = async (urls: IUrl[], retries = 0) => {
 
     // console.log(isToday);
 
-    await getGamesData(page);
+    const gamesData = await getGamesData(page);
 
     await browser.close();
     console.log(chalk.bgGreen("🏁 Scraping complete"));
     console.log("");
+
+    return gamesData;
   } catch (error) {
     console.error(chalk.bgRed("Scraping failed:", error));
     if (browser) {
@@ -84,7 +89,7 @@ const scrapePages = async (urls: IUrl[], retries = 0) => {
         }/${maxRetries})`
       );
       await new Promise((resolve) => setTimeout(resolve, retryDelay(0, 0, 10)));
-      await scrapePages(urls, retries + 1);
+      await launchScraping(retries + 1);
     } else {
       console.error(chalk.bgRed("Max retries reached. Exiting..."));
       // Forcefully exit the script with a non-zero exit code
@@ -93,13 +98,16 @@ const scrapePages = async (urls: IUrl[], retries = 0) => {
   }
 };
 
-const launchScraping = async () => {
-  await scrapePages(scrapedUrl);
-};
-
 // Schedule the script to run periodically
 (async () => {
-  launchScraping();
+  await launchScraping();
+
+  setTimeout(async () => {
+    const scheduledGames = await getPageAfterNow();
+
+    console.log(scheduledGames.length);
+  }, 30 * 1000);
+
   // const today = dayjs();
   // const hour = today.hour();
   // const minute = today.minute();
@@ -114,3 +122,38 @@ const launchScraping = async () => {
   //   launchScraping();
   // });
 })();
+
+// (async () => {
+//   // Lancer le scraping tous les jours à 9h
+//   cron.schedule("0 9 * * *", async () => {
+//     await launchScraping();
+
+//     if (gamesData) {
+//       // Parcourir les matchs pour planifier les tâches de lancement
+//       for (const game of gamesData) {
+//         const matchDateTime = dayjs(game.date);
+
+//         if (game.score) {
+//           const period = game.score.period as string;
+
+//           // Vérifier si le match a déjà commencé
+//           if (dayjs().isAfter(matchDateTime) && period !== "FIN") {
+//             // Mettez ici la logique de scraping
+//             launchScraping();
+//           } else {
+//             // Planifier le scraping au début du match
+//             cron.schedule(
+//               `${matchDateTime.minute()} ${matchDateTime.hour()} * * ${matchDateTime.day()}`,
+//               async () => {
+//                 if (dayjs().isAfter(matchDateTime) && period !== "FIN") {
+//                   // Mettez ici la logique de scraping
+//                   launchScraping();
+//                 }
+//               }
+//             );
+//           }
+//         }
+//       }
+//     }
+//   });
+// })();

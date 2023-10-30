@@ -60,5 +60,5 @@ export const getGamesWithoutDetails = async (page: Page) => {
     }
   );
 
-  return gamesWithoutDetails
+  return gamesWithoutDetails;
 };
