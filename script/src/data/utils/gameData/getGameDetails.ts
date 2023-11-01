@@ -25,8 +25,6 @@ export const getGameDetails = async (page: Page) => {
         score,
       };
 
-      console.log(gameDetail)
-
       gameDetails.push(gameDetail);
     } else {
       gameDetails.push({

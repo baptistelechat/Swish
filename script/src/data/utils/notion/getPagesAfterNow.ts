@@ -2,7 +2,7 @@ import { Client } from "@notionhq/client";
 import dayjs from "dayjs";
 
 
-const getPageAfterNow = async () => {
+const getPagesAfterNow = async () => {
   const notion = new Client({ auth: process.env.NOTION_API_KEY });
   // Remplace avec l'ID de ta base de données
   const databaseId = process.env.NOTION_GAME_DATABASE_ID as string;
@@ -20,4 +20,4 @@ const getPageAfterNow = async () => {
   return response.results;
 };
 
-export default getPageAfterNow;
+export default getPagesAfterNow;

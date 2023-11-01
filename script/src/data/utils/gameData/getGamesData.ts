@@ -41,7 +41,7 @@ export const getGamesData = async (page: Page) => {
       }
 
       const progress = getProgress(gameData);
-      console.log(chalk.bgBlue(progress));
+      console.log(progress);
 
       return gameData;
     }

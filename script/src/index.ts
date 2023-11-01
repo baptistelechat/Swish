@@ -10,7 +10,8 @@ import { getGamesData } from "./data/utils/gameData/getGamesData";
 import { retryDelay } from "./data/utils/retryDelay";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import getPageAfterNow from "./data/utils/notion/getPageAfterNow";
+import getPagesAfterNow from "./data/utils/notion/getPagesAfterNow";
+import getNotFinishedPages from "./data/utils/notion/getNotFinishedPages";
 
 dayjs.extend(customParseFormat);
 
@@ -41,7 +42,8 @@ const launchScraping = async (retries = 0) => {
 
     // Go to Game center
     await page.goto(url.path);
-    console.log(`Navigated to ${url.id}`);
+    console.log("");
+    console.log(chalk.underline(`Navigated to ${url.id} :`));
 
     // Attendre que la div avec l'id game-center-result soit visible
     await page.waitForSelector(
@@ -72,6 +74,7 @@ const launchScraping = async (retries = 0) => {
     const gamesData = await getGamesData(page);
 
     await browser.close();
+    console.log("");
     console.log(chalk.bgGreen("🏁 Scraping complete"));
     console.log("");
 
@@ -100,60 +103,76 @@ const launchScraping = async (retries = 0) => {
 
 // Schedule the script to run periodically
 (async () => {
+  // TODO → Lancer le scraping tous les jours à 9h + Ajouter des timeout de 30sec environ après launchsraping()dans les boucles cron de 3min afin d'attendre que les mises soient bien enregistrés dans Notion
   await launchScraping();
 
   setTimeout(async () => {
-    const scheduledGames = await getPageAfterNow();
+    const scheduledGames = (await getPagesAfterNow()) as any[];
 
-    console.log(scheduledGames.length);
+    const dates = scheduledGames.map((game) => {
+      return game.properties.Date.date.start;
+    });
+
+    const datesUniques = [...new Set(dates)]; // TODO sort date
+
+    console.log(chalk.bgCyan("📅 Prochaine tâches :"));
+    console.log(datesUniques);
+    console.log("");
+
+    const defaultCurrentJob = {
+      cronString: "",
+      date: "",
+    };
+
+    let currentJob = defaultCurrentJob;
+
+    datesUniques.map(async (date, index) => {
+      const convertedDate = dayjs(date);
+      const cronString = `${convertedDate.minute()} ${convertedDate.hour()} * * ${convertedDate.day()}`;
+
+      if (currentJob.cronString === "") {
+        currentJob = {
+          cronString,
+          date,
+        };
+      }
+
+      cron.schedule(cronString, async () => {
+        console.log(chalk.yellow(`⌛ Tâche principale - ${cronString}`));
+
+        if (currentJob.cronString === cronString) {
+          await launchScraping();
+        }
+
+        const task = cron.schedule(`*/3 * * * *`, async () => {
+          console.log(chalk.yellow(`⌛ Boucle 3min - ${cronString}`));
+
+          if (currentJob.cronString === cronString) {
+            await launchScraping();
+            const notFinishedPages = await getNotFinishedPages(date);
+
+            if (notFinishedPages.length === 0) {
+              if (datesUniques[index + 1]) {
+                const newConvertedDate = dayjs(datesUniques[index + 1]);
+                const newCronString = `${newConvertedDate.minute()} ${newConvertedDate.hour()} * * ${newConvertedDate.day()}`;
+
+                task.stop();
+                console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
+
+                currentJob = {
+                  cronString: newCronString,
+                  date: datesUniques[index + 1],
+                };
+              } else {
+                task.stop();
+                console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
+
+                currentJob = defaultCurrentJob;
+              }
+            }
+          }
+        });
+      });
+    });
   }, 30 * 1000);
-
-  // const today = dayjs();
-  // const hour = today.hour();
-  // const minute = today.minute();
-
-  // console.log(chalk.bgYellow(`⌛ ${minute + 1} ${hour} * * *`));
-
-  // cron.schedule(`${minute + 1} ${hour} * * *`, async () => {
-  //   launchScraping();
-  // });
-
-  // cron.schedule("*/2 * * * *", async () => {
-  //   launchScraping();
-  // });
 })();
-
-// (async () => {
-//   // Lancer le scraping tous les jours à 9h
-//   cron.schedule("0 9 * * *", async () => {
-//     await launchScraping();
-
-//     if (gamesData) {
-//       // Parcourir les matchs pour planifier les tâches de lancement
-//       for (const game of gamesData) {
-//         const matchDateTime = dayjs(game.date);
-
-//         if (game.score) {
-//           const period = game.score.period as string;
-
-//           // Vérifier si le match a déjà commencé
-//           if (dayjs().isAfter(matchDateTime) && period !== "FIN") {
-//             // Mettez ici la logique de scraping
-//             launchScraping();
-//           } else {
-//             // Planifier le scraping au début du match
-//             cron.schedule(
-//               `${matchDateTime.minute()} ${matchDateTime.hour()} * * ${matchDateTime.day()}`,
-//               async () => {
-//                 if (dayjs().isAfter(matchDateTime) && period !== "FIN") {
-//                   // Mettez ici la logique de scraping
-//                   launchScraping();
-//                 }
-//               }
-//             );
-//           }
-//         }
-//       }
-//     }
-//   });
-// })();
