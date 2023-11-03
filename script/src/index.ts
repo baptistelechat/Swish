@@ -2,8 +2,6 @@ import puppeteer from "puppeteer";
 import cron from "node-cron";
 import dotenv from "dotenv";
 import chalk from "chalk";
-
-import { IUrl } from "./data/interfaces/IUrl";
 import { scrapedUrl } from "./data/constants/scrapedUrl";
 import { getCurrentTimestamp } from "./data/utils/getCurrentTimestamp";
 import { getGamesData } from "./data/utils/gameData/getGamesData";
@@ -50,27 +48,6 @@ const launchScraping = async (retries = 0) => {
       '#game-center-result[style="visibility: visible;"]'
     );
 
-    // const getActiveGames = async () => {
-    //   return await page.evaluate(() => {
-    //     const monthFilterElement = document.querySelector(".month-filter");
-
-    //     if (monthFilterElement) {
-    //       const currentDate = monthFilterElement.getAttribute("current_date");
-
-    //       return currentDate;
-    //     }
-    //     return null;
-    //   });
-    // };
-
-    // const activeGames = await getActiveGames();
-
-    // const isToday = dayjs().isSame(dayjs(activeGames, "DD/MM/YYYY"));
-
-    // console.log([dayjs(), dayjs(activeGames, "DD/MM/YYYY")]);
-
-    // console.log(isToday);
-
     const gamesData = await getGamesData(page);
 
     await browser.close();
@@ -103,76 +80,81 @@ const launchScraping = async (retries = 0) => {
 
 // Schedule the script to run periodically
 (async () => {
-  // TODO → Lancer le scraping tous les jours à 9h + Ajouter des timeout de 30sec environ après launchsraping()dans les boucles cron de 3min afin d'attendre que les mises soient bien enregistrés dans Notion
-  await launchScraping();
+  console.log(chalk.cyan(`🚀 Lancement ...`));
+  cron.schedule("0 9 * * * ", async () => {
+    console.log(chalk.yellow(`⌛ Lancement quotidien - 9h00`));
+    await launchScraping();
 
-  setTimeout(async () => {
-    const scheduledGames = (await getPagesAfterNow()) as any[];
+    setTimeout(async () => {
+      const scheduledGames = (await getPagesAfterNow()) as any[];
 
-    const dates = scheduledGames.map((game) => {
-      return game.properties.Date.date.start;
-    });
+      const dates = scheduledGames.map((game) => {
+        return game.properties.Date.date.start;
+      });
 
-    const datesUniques = [...new Set(dates)]; // TODO sort date
+      const datesUniques = [...new Set(dates)]; // TODO sort date
 
-    console.log(chalk.bgCyan("📅 Prochaine tâches :"));
-    console.log(datesUniques);
-    console.log("");
+      console.log(chalk.bgCyan("📅 Prochaine tâches :"));
+      console.log(datesUniques);
+      console.log("");
 
-    const defaultCurrentJob = {
-      cronString: "",
-      date: "",
-    };
+      const defaultCurrentJob = {
+        cronString: "",
+        date: "",
+      };
 
-    let currentJob = defaultCurrentJob;
+      let currentJob = defaultCurrentJob;
 
-    datesUniques.map(async (date, index) => {
-      const convertedDate = dayjs(date);
-      const cronString = `${convertedDate.minute()} ${convertedDate.hour()} * * ${convertedDate.day()}`;
+      datesUniques.map(async (date, index) => {
+        const convertedDate = dayjs(date);
+        const cronString = `${convertedDate.minute()} ${convertedDate.hour()} * * ${convertedDate.day()}`;
 
-      if (currentJob.cronString === "") {
-        currentJob = {
-          cronString,
-          date,
-        };
-      }
-
-      cron.schedule(cronString, async () => {
-        console.log(chalk.yellow(`⌛ Tâche principale - ${cronString}`));
-
-        if (currentJob.cronString === cronString) {
-          await launchScraping();
+        if (currentJob.cronString === "") {
+          currentJob = {
+            cronString,
+            date,
+          };
         }
 
-        const task = cron.schedule(`*/3 * * * *`, async () => {
-          console.log(chalk.yellow(`⌛ Boucle 3min - ${cronString}`));
+        cron.schedule(cronString, async () => {
+          console.log(chalk.yellow(`⌛ Tâche principale - ${cronString}`));
 
           if (currentJob.cronString === cronString) {
             await launchScraping();
-            const notFinishedPages = await getNotFinishedPages(date);
-
-            if (notFinishedPages.length === 0) {
-              if (datesUniques[index + 1]) {
-                const newConvertedDate = dayjs(datesUniques[index + 1]);
-                const newCronString = `${newConvertedDate.minute()} ${newConvertedDate.hour()} * * ${newConvertedDate.day()}`;
-
-                task.stop();
-                console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
-
-                currentJob = {
-                  cronString: newCronString,
-                  date: datesUniques[index + 1],
-                };
-              } else {
-                task.stop();
-                console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
-
-                currentJob = defaultCurrentJob;
-              }
-            }
           }
+
+          const task = cron.schedule(`*/3 * * * *`, async () => {
+            console.log(chalk.yellow(`⌛ Boucle 3min - ${cronString}`));
+
+            if (currentJob.cronString === cronString) {
+              await launchScraping();
+              setTimeout(async () => {
+                const notFinishedPages = await getNotFinishedPages(date);
+
+                if (notFinishedPages.length === 0) {
+                  if (datesUniques[index + 1]) {
+                    const newConvertedDate = dayjs(datesUniques[index + 1]);
+                    const newCronString = `${newConvertedDate.minute()} ${newConvertedDate.hour()} * * ${newConvertedDate.day()}`;
+
+                    task.stop();
+                    console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
+
+                    currentJob = {
+                      cronString: newCronString,
+                      date: datesUniques[index + 1],
+                    };
+                  } else {
+                    task.stop();
+                    console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
+
+                    currentJob = defaultCurrentJob;
+                  }
+                }
+              }, 30 * 1000);
+            }
+          });
         });
       });
-    });
-  }, 30 * 1000);
+    }, 30 * 1000);
+  });
 })();

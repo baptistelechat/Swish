@@ -4,10 +4,10 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import { IGame } from "../../interfaces/IGame";
 import { getGameDetails } from "./getGameDetails";
 import { getGamesWithoutDetails } from "./getGamesWithoutDetails";
-import chalk from "chalk";
 import { getProgress } from "./getProgress";
 import addNewGame from "../notion/addNewGame";
 import updateGame from "../notion/updateGame";
+import endGame from "../notion/endGame";
 
 dayjs.extend(customParseFormat);
 
@@ -40,6 +40,10 @@ export const getGamesData = async (page: Page) => {
         updateGame(gameData);
       }
 
+      if (score?.period === "Fin") {
+        endGame(gameData);
+      }
+      
       const progress = getProgress(gameData);
       console.log(progress);
 

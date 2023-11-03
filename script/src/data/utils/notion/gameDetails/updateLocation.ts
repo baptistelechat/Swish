@@ -1,12 +1,22 @@
 import { Client } from "@notionhq/client";
 import chalk from "chalk";
 
-const updateLocation = async (
-  notion: Client,
-  page: any,
-  property: string | null
-) => {
-  if (property) {
+interface IUpdateLocation {
+  notion: Client;
+  page: any;
+  value: string | null;
+  homeTeamName: string | null;
+  awayTeamName: string | null;
+}
+
+const updateLocation = async ({
+  notion,
+  page,
+  value,
+  homeTeamName,
+  awayTeamName,
+}: IUpdateLocation) => {
+  if (value) {
     try {
       await notion.pages.update({
         page_id: page.id,
@@ -16,7 +26,7 @@ const updateLocation = async (
               {
                 type: "text",
                 text: {
-                  content: property as string,
+                  content: value as string,
                   link: null,
                 },
               },
@@ -26,7 +36,9 @@ const updateLocation = async (
       });
     } catch (error: any) {
       console.error(
-        chalk.bgRed(`Failed to create new page : ${error.message}`)
+        chalk.bgRed(
+          `Failed to create new page (${homeTeamName} / ${awayTeamName}) : ${error.message}`
+        )
       );
     }
   }

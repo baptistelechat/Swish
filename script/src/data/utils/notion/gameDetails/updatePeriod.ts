@@ -2,12 +2,22 @@ import { Client } from "@notionhq/client";
 import { TPeriod } from "../../../interfaces/TPeriod";
 import chalk from "chalk";
 
-const updatePeriod = async (
-  notion: Client,
-  page: any,
-  property: TPeriod | undefined
-) => {
-  if (property) {
+interface IUpdatePeriod {
+  notion: Client;
+  page: any;
+  value: TPeriod | undefined;
+  homeTeamName: string | null;
+  awayTeamName: string | null;
+}
+
+const updatePeriod = async ({
+  notion,
+  page,
+  value,
+  homeTeamName,
+  awayTeamName,
+}: IUpdatePeriod) => {
+  if (value) {
     try {
       await notion.pages.update({
         page_id: page.id,
@@ -17,7 +27,7 @@ const updatePeriod = async (
               {
                 type: "text",
                 text: {
-                  content: property as string,
+                  content: value as string,
                   link: null,
                 },
               },
@@ -27,7 +37,9 @@ const updatePeriod = async (
       });
     } catch (error: any) {
       console.error(
-        chalk.bgRed(`Failed to update period : ${error.message}`)
+        chalk.bgRed(
+          `Failed to update period (${homeTeamName} / ${awayTeamName}) : ${error.message}`
+        )
       );
     }
   }

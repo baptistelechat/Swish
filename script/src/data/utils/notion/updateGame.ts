@@ -35,27 +35,112 @@ const updateGame = async (game: IGame) => {
 
   if (matchExist) {
     const properties = page.properties;
-    await updatePeriod(notion, page, game.score?.period);
+    await updatePeriod({
+      notion,
+      page,
+      value: game.score?.period,
+      homeTeamName: game.home.name,
+      awayTeamName: game.away.name,
+    });
+
     if (properties.Lieu.rich_text.length === 0) {
-      await updateLocation(notion, page, game.location);
+      await updateLocation({
+        notion,
+        page,
+        value: game.location,
+        homeTeamName: game.home.name,
+        awayTeamName: game.away.name,
+      });
     }
+
     if (game.score?.period !== "Fin") {
       // Home
-      await updateQ1Home(notion, page, game.score?.q1.home);
-      await updateQ2Home(notion, page, game.score?.q2.home);
-      await updateQ3Home(notion, page, game.score?.q3.home);
-      await updateQ4Home(notion, page, game.score?.q4.home);
-      await updateOT1Home(notion, page, game.score?.ot1.home);
-      await updateOT2Home(notion, page, game.score?.ot2.home);
-      await updateOT3Home(notion, page, game.score?.ot3.home);
+      await updateQ1Home({
+        notion,
+        page,
+        value: game.score?.q1.home,
+        teamName: game.home.name,
+      });
+      await updateQ2Home({
+        notion,
+        page,
+        value: game.score?.q2.home,
+        teamName: game.home.name,
+      });
+      await updateQ3Home({
+        notion,
+        page,
+        value: game.score?.q3.home,
+        teamName: game.home.name,
+      });
+      await updateQ4Home({
+        notion,
+        page,
+        value: game.score?.q4.home,
+        teamName: game.home.name,
+      });
+      await updateOT1Home({
+        notion,
+        page,
+        value: game.score?.ot1.home,
+        teamName: game.home.name,
+      });
+      await updateOT2Home({
+        notion,
+        page,
+        value: game.score?.ot2.home,
+        teamName: game.home.name,
+      });
+      await updateOT3Home({
+        notion,
+        page,
+        value: game.score?.ot3.home,
+        teamName: game.home.name,
+      });
+
       // Away
-      await updateQ1Away(notion, page, game.score?.q1.away);
-      await updateQ2Away(notion, page, game.score?.q2.away);
-      await updateQ3Away(notion, page, game.score?.q3.away);
-      await updateQ4Away(notion, page, game.score?.q4.away);
-      await updateOT1Away(notion, page, game.score?.ot1.away);
-      await updateOT2Away(notion, page, game.score?.ot2.away);
-      await updateOT3Away(notion, page, game.score?.ot3.away);
+      await updateQ1Away({
+        notion,
+        page,
+        value: game.score?.q1.away,
+        teamName: game.away.name,
+      });
+      await updateQ2Away({
+        notion,
+        page,
+        value: game.score?.q2.away,
+        teamName: game.away.name,
+      });
+      await updateQ3Away({
+        notion,
+        page,
+        value: game.score?.q3.away,
+        teamName: game.away.name,
+      });
+      await updateQ4Away({
+        notion,
+        page,
+        value: game.score?.q4.away,
+        teamName: game.away.name,
+      });
+      await updateOT1Away({
+        notion,
+        page,
+        value: game.score?.ot1.away,
+        teamName: game.away.name,
+      });
+      await updateOT2Away({
+        notion,
+        page,
+        value: game.score?.ot2.away,
+        teamName: game.away.name,
+      });
+      await updateOT3Away({
+        notion,
+        page,
+        value: game.score?.ot3.away,
+        teamName: game.away.name,
+      });
     }
   }
 };
