@@ -1,6 +1,6 @@
 import { Client } from "@notionhq/client";
-import { TPeriod } from "../../../interfaces/TPeriod";
 import chalk from "chalk";
+import { TPeriod } from "../../../interfaces/TPeriod";
 
 interface IUpdatePeriod {
   notion: Client;

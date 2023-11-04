@@ -1,6 +1,6 @@
 import { Page } from "puppeteer";
 
-export const getLocation = async (page: Page) => {
+const getLocation = async (page: Page) => {
   await Promise.race([
     page.waitForSelector(".sw-fixture-info-summary"),
     page.waitForSelector("span.location"),
@@ -28,3 +28,5 @@ export const getLocation = async (page: Page) => {
     return null;
   });
 };
+
+export default getLocation;

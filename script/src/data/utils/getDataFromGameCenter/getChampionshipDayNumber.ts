@@ -1,6 +1,6 @@
 import { Page } from "puppeteer";
 
-export const getChampionshipDayNumber = async (page: Page) => {
+const getChampionshipDayNumber = async (page: Page) => {
   return await page.evaluate(() => {
     const gameElements = Array.from(document.querySelectorAll(".game-result"));
 
@@ -11,15 +11,32 @@ export const getChampionshipDayNumber = async (page: Page) => {
       ) as HTMLDivElement;
 
       if (championshipDayNumberElement) {
-        const championshipDayNumber = championshipDayNumberElement.innerText
-          .trim()
-          .split("ÈRE")[0]
-          .split("ÈME")[0];
+        const championshipPresentation =
+          championshipDayNumberElement.innerText.trim();
+        const championshipDayNumber = !championshipPresentation.includes(
+          "LEADERS"
+        )
+          ? `${window.location.href
+              .split("/")[3]
+              .replaceAll("-", " ")
+              .toUpperCase()} - ${
+              championshipPresentation.split("ÈRE")[0].split("ÈME")[0]
+            }`
+          : `${championshipPresentation
+              .split(" - ")[0]
+              .replace("PROB", "PRO B")} - ${
+              championshipPresentation
+                .split(" - ")[1]
+                .split("ÈRE")[0]
+                .split("ÈME")[0]
+            }`;
 
         return championshipDayNumber;
       }
-      
+
       return null;
     });
   });
 };
+
+export default getChampionshipDayNumber

@@ -1,37 +1,41 @@
-import { Page } from "puppeteer";
+import chalk from "chalk";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import { Page } from "puppeteer";
 import { IGame } from "../../interfaces/IGame";
-import { getGameDetails } from "./getGameDetails";
-import { getGamesWithoutDetails } from "./getGamesWithoutDetails";
-import { getProgress } from "./getProgress";
 import addNewGame from "../notion/addNewGame";
-import updateGame from "../notion/updateGame";
 import endGame from "../notion/endGame";
+import updateGame from "../notion/updateGame";
+import getGamesDetails from "./getGamesDetails";
+import getGamesWithoutDetails from "./getGamesWithoutDetails";
+import getProgress from "./getProgress";
 
 dayjs.extend(customParseFormat);
 
-export const getGamesData = async (page: Page) => {
+const getGamesData = async (page: Page) => {
   const gamesWithoutDetails = await getGamesWithoutDetails(page);
 
   gamesWithoutDetails.map(async (game) => {
     await addNewGame(game);
   });
 
-  const gameDetails = await getGameDetails(page);
+  const gamesDetails = await getGamesDetails(page);
 
   const gamesData: IGame[] = gamesWithoutDetails.map(
-    (gamesWithoutDetails, index) => {
-      const gameDetail = gameDetails[index];
+    (gameWithoutDetails, index) => {
+      const gameDetails = gamesDetails[index];
 
-      const { date, championshipDayNumber, home, away } = gamesWithoutDetails;
-      const { location, score } = gameDetail;
+      const { date, championshipName, championshipDayNumber, home, away } =
+        gameWithoutDetails;
+      const { colors, location, score } = gameDetails;
 
       const gameData: IGame = {
         date,
+        championshipName,
         championshipDayNumber,
         home,
         away,
+        colors,
         location,
         score,
       };
@@ -43,9 +47,17 @@ export const getGamesData = async (page: Page) => {
       if (score?.period === "Fin") {
         endGame(gameData);
       }
-      
+
       const progress = getProgress(gameData);
-      console.log(progress);
+
+      if (
+        progress.includes("Match à venir") ||
+        progress.includes("Fin du match")
+      ) {
+        console.log(chalk.gray(progress));
+      } else {
+        console.log(progress);
+      }
 
       return gameData;
     }
@@ -55,3 +67,5 @@ export const getGamesData = async (page: Page) => {
 
   return gamesData;
 };
+
+export default getGamesData;

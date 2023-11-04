@@ -1,7 +1,6 @@
 import { ILogo } from "./ILogo";
 
-export interface ITeamResult {
+export interface ITeam {
   name: string | null;
   logo: ILogo | null;
-  // score: number | null;
 }

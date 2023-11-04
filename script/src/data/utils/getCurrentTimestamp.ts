@@ -1,4 +1,4 @@
-export const getCurrentTimestamp = (shortDateStyle?: boolean): string => {
+const getCurrentTimestamp = (shortDateStyle?: boolean): string => {
   const now = new Date();
   const options: Intl.DateTimeFormatOptions = {
     timeZone: "Europe/Paris",
@@ -6,3 +6,5 @@ export const getCurrentTimestamp = (shortDateStyle?: boolean): string => {
   }; // Set the desired time zone
   return now.toLocaleString("fr-FR", options);
 };
+
+export default getCurrentTimestamp;

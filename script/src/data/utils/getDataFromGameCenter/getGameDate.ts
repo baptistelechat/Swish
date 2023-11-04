@@ -12,7 +12,10 @@ export const getGameDay = async (page: Page) => {
       ) as HTMLDivElement;
 
       if (dateElement) {
-        const date = dateElement.innerText.trim().split(" - ")[1];
+        const championshipPresentation = dateElement.innerText.trim();
+        const date = !championshipPresentation.includes("LEADERS")
+          ? championshipPresentation.split(" - ")[1]
+          : championshipPresentation.split(" - ")[2];
 
         return date;
       }

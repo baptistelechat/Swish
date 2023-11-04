@@ -1,7 +1,6 @@
 import { Client } from "@notionhq/client";
 import dayjs from "dayjs";
 
-
 const getPagesAfterNow = async () => {
   const notion = new Client({ auth: process.env.NOTION_API_KEY });
   // Remplace avec l'ID de ta base de données

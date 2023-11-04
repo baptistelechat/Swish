@@ -1,15 +1,15 @@
-import puppeteer from "puppeteer";
-import cron from "node-cron";
-import dotenv from "dotenv";
 import chalk from "chalk";
-import { scrapedUrl } from "./data/constants/scrapedUrl";
-import { getCurrentTimestamp } from "./data/utils/getCurrentTimestamp";
-import { getGamesData } from "./data/utils/gameData/getGamesData";
-import { retryDelay } from "./data/utils/retryDelay";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import getPagesAfterNow from "./data/utils/notion/getPagesAfterNow";
+import dotenv from "dotenv";
+import cron from "node-cron";
+import puppeteer from "puppeteer";
+import { scrapedUrl } from "./data/constants/scrapedUrl";
+import getGamesData from "./data/utils/gameData/getGamesData";
+import getCurrentTimestamp from "./data/utils/getCurrentTimestamp";
 import getNotFinishedPages from "./data/utils/notion/getNotFinishedPages";
+import getPagesAfterNow from "./data/utils/notion/getPagesAfterNow";
+import retryDelay from "./data/utils/retryDelay";
 
 dayjs.extend(customParseFormat);
 
@@ -36,26 +36,70 @@ const launchScraping = async (retries = 0) => {
     });
     const page = await browser.newPage();
 
-    const url = scrapedUrl[1];
+    // ELITE
+    const eliteUrl = scrapedUrl[0];
 
     // Go to Game center
-    await page.goto(url.path);
+    await page.goto(eliteUrl.path);
     console.log("");
-    console.log(chalk.underline(`Navigated to ${url.id} :`));
+    console.log(chalk.underline(`Navigated to ${eliteUrl.id} :`));
 
     // Attendre que la div avec l'id game-center-result soit visible
     await page.waitForSelector(
       '#game-center-result[style="visibility: visible;"]'
     );
 
-    const gamesData = await getGamesData(page);
+    await getGamesData(page);
+
+    // PRO B
+    const proBUrl = scrapedUrl[1];
+
+    // Go to Game center
+    await page.goto(proBUrl.path);
+    console.log("");
+    console.log(chalk.underline(`Navigated to ${proBUrl.id} :`));
+
+    // Attendre que la div avec l'id game-center-result soit visible
+    await page.waitForSelector(
+      '#game-center-result[style="visibility: visible;"]'
+    );
+
+    await getGamesData(page);
+
+    // ESPOIRS ElITE
+    const eliteEspoirsUrl = scrapedUrl[2];
+
+    // Go to Game center
+    await page.goto(eliteEspoirsUrl.path);
+    console.log("");
+    console.log(chalk.underline(`Navigated to ${eliteEspoirsUrl.id} :`));
+
+    // Attendre que la div avec l'id game-center-result soit visible
+    await page.waitForSelector(
+      '#game-center-result[style="visibility: visible;"]'
+    );
+
+    await getGamesData(page);
+
+    // ESPOIRS PRO B
+    const proBEspoirsUrl = scrapedUrl[3];
+
+    // Go to Game center
+    await page.goto(proBEspoirsUrl.path);
+    console.log("");
+    console.log(chalk.underline(`Navigated to ${proBEspoirsUrl.id} :`));
+
+    // Attendre que la div avec l'id game-center-result soit visible
+    await page.waitForSelector(
+      '#game-center-result[style="visibility: visible;"]'
+    );
+
+    await getGamesData(page);
 
     await browser.close();
     console.log("");
     console.log(chalk.bgGreen("🏁 Scraping complete"));
     console.log("");
-
-    return gamesData;
   } catch (error) {
     console.error(chalk.bgRed("Scraping failed:", error));
     if (browser) {
@@ -81,80 +125,82 @@ const launchScraping = async (retries = 0) => {
 // Schedule the script to run periodically
 (async () => {
   console.log(chalk.cyan(`🚀 Lancement ...`));
-  cron.schedule("0 9 * * * ", async () => {
-    console.log(chalk.yellow(`⌛ Lancement quotidien - 9h00`));
-    await launchScraping();
+  // cron.schedule("39 10 * * * ", async () => {
+  console.log(chalk.yellow(`⌛ Lancement quotidien - 9h00`));
+  await launchScraping();
 
-    setTimeout(async () => {
-      const scheduledGames = (await getPagesAfterNow()) as any[];
+  setTimeout(async () => {
+    const scheduledGames = (await getPagesAfterNow()) as any[];
 
-      const dates = scheduledGames.map((game) => {
-        return game.properties.Date.date.start;
-      });
+    const dates = scheduledGames.map((game) => {
+      return game.properties.Date.date.start;
+    });
 
-      const datesUniques = [...new Set(dates)]; // TODO sort date
+    const datesUniques = [...new Set(dates)];
 
-      console.log(chalk.bgCyan("📅 Prochaine tâches :"));
-      console.log(datesUniques);
-      console.log("");
+    datesUniques.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
 
-      const defaultCurrentJob = {
-        cronString: "",
-        date: "",
-      };
+    console.log(chalk.bgCyan("📅 Prochaine tâches :"));
+    console.log(datesUniques);
+    console.log("");
 
-      let currentJob = defaultCurrentJob;
+    const defaultCurrentJob = {
+      cronString: "",
+      date: "",
+    };
 
-      datesUniques.map(async (date, index) => {
-        const convertedDate = dayjs(date);
-        const cronString = `${convertedDate.minute()} ${convertedDate.hour()} * * ${convertedDate.day()}`;
+    let currentJob = defaultCurrentJob;
 
-        if (currentJob.cronString === "") {
-          currentJob = {
-            cronString,
-            date,
-          };
+    datesUniques.map(async (date, index) => {
+      const convertedDate = dayjs(date);
+      const cronString = `${convertedDate.minute()} ${convertedDate.hour()} * * ${convertedDate.day()}`;
+
+      if (currentJob.cronString === "") {
+        currentJob = {
+          cronString,
+          date,
+        };
+      }
+
+      cron.schedule(cronString, async () => {
+        console.log(chalk.yellow(`⌛ Tâche principale - ${cronString}`));
+
+        if (currentJob.cronString === cronString) {
+          await launchScraping();
         }
 
-        cron.schedule(cronString, async () => {
-          console.log(chalk.yellow(`⌛ Tâche principale - ${cronString}`));
+        const task = cron.schedule(`*/3 * * * *`, async () => {
+          console.log(chalk.yellow(`⌛ Boucle 3min - ${cronString}`));
 
           if (currentJob.cronString === cronString) {
             await launchScraping();
-          }
+            setTimeout(async () => {
+              const notFinishedPages = await getNotFinishedPages(date);
 
-          const task = cron.schedule(`*/3 * * * *`, async () => {
-            console.log(chalk.yellow(`⌛ Boucle 3min - ${cronString}`));
+              if (notFinishedPages.length === 0) {
+                if (datesUniques[index + 1]) {
+                  const newConvertedDate = dayjs(datesUniques[index + 1]);
+                  const newCronString = `${newConvertedDate.minute()} ${newConvertedDate.hour()} * * ${newConvertedDate.day()}`;
 
-            if (currentJob.cronString === cronString) {
-              await launchScraping();
-              setTimeout(async () => {
-                const notFinishedPages = await getNotFinishedPages(date);
+                  task.stop();
+                  console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
 
-                if (notFinishedPages.length === 0) {
-                  if (datesUniques[index + 1]) {
-                    const newConvertedDate = dayjs(datesUniques[index + 1]);
-                    const newCronString = `${newConvertedDate.minute()} ${newConvertedDate.hour()} * * ${newConvertedDate.day()}`;
+                  currentJob = {
+                    cronString: newCronString,
+                    date: datesUniques[index + 1],
+                  };
+                } else {
+                  task.stop();
+                  console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
 
-                    task.stop();
-                    console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
-
-                    currentJob = {
-                      cronString: newCronString,
-                      date: datesUniques[index + 1],
-                    };
-                  } else {
-                    task.stop();
-                    console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
-
-                    currentJob = defaultCurrentJob;
-                  }
+                  currentJob = defaultCurrentJob;
                 }
-              }, 30 * 1000);
-            }
-          });
+              }
+            }, 30 * 1000);
+          }
         });
       });
-    }, 30 * 1000);
-  });
+    });
+  }, 30 * 1000);
+  // });
 })();

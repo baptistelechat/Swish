@@ -1,21 +1,23 @@
 import dayjs from "dayjs";
+import { Page } from "puppeteer";
 import { IGameWithoutDetails } from "../../interfaces/IGame";
-import { getChampionshipDayNumber } from "../getDataFromGameCenter/getChampionshipDayNumber";
+import getChampionshipDayNumber from "../getDataFromGameCenter/getChampionshipDayNumber";
+import getChampionshipName from "../getDataFromGameCenter/getChampionshipName";
 import { getGameDay, getGameHour } from "../getDataFromGameCenter/getGameDate";
 import {
-  getHomeTeamLogo,
   getAwayTeamLogo,
+  getHomeTeamLogo,
 } from "../getDataFromGameCenter/getTeamLogo";
 import {
-  getHomeTeamName,
   getAwayTeamName,
+  getHomeTeamName,
 } from "../getDataFromGameCenter/getTeamName";
-import { Page } from "puppeteer";
 
-export const getGamesWithoutDetails = async (page: Page) => {
+const getGamesWithoutDetails = async (page: Page) => {
   const [
     dates,
     times,
+    championshipNames,
     championshipDays,
     homeTeamNames,
     homeTeamLogos,
@@ -24,6 +26,7 @@ export const getGamesWithoutDetails = async (page: Page) => {
   ] = await Promise.all([
     getGameDay(page),
     getGameHour(page),
+    getChampionshipName(page),
     getChampionshipDayNumber(page),
     getHomeTeamName(page),
     getHomeTeamLogo(page),
@@ -34,6 +37,7 @@ export const getGamesWithoutDetails = async (page: Page) => {
   const gamesWithoutDetails: IGameWithoutDetails[] = dates.map(
     (date, index) => {
       const time = times[index];
+      const championshipName = championshipNames[index];
       const championshipDay = championshipDays[index];
       const homeTeamName = homeTeamNames[index];
       const homeTeamLogo = homeTeamLogos[index];
@@ -47,7 +51,8 @@ export const getGamesWithoutDetails = async (page: Page) => {
               .minute(time.minutes)
               .toDate()
           : null,
-        championshipDayNumber: championshipDay ? Number(championshipDay) : null,
+        championshipName: championshipName ? championshipName : null,
+        championshipDayNumber: championshipDay ? championshipDay : null,
         home: {
           name: homeTeamName,
           logo: homeTeamLogo,
@@ -62,3 +67,5 @@ export const getGamesWithoutDetails = async (page: Page) => {
 
   return gamesWithoutDetails;
 };
+
+export default getGamesWithoutDetails;

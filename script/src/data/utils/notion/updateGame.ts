@@ -1,7 +1,15 @@
 import { Client } from "@notionhq/client";
 import { IGame } from "../../interfaces/IGame";
-import getPageByMatch from "./getPageByMatch";
-import updateLocation from "./gameDetails/updateLocation";
+import getMatchId from "../gameData/getMatchId";
+import {
+  updateOT1Away,
+  updateOT2Away,
+  updateOT3Away,
+  updateQ1Away,
+  updateQ2Away,
+  updateQ3Away,
+  updateQ4Away,
+} from "./gameDetails/updateAwayScore";
 import {
   updateOT1Home,
   updateOT2Home,
@@ -11,17 +19,13 @@ import {
   updateQ3Home,
   updateQ4Home,
 } from "./gameDetails/updateHomeScore";
-import getMatchId from "../gameData/getMatchId";
-import {
-  updateQ1Away,
-  updateQ2Away,
-  updateQ3Away,
-  updateQ4Away,
-  updateOT1Away,
-  updateOT2Away,
-  updateOT3Away,
-} from "./gameDetails/updateAwayScore";
+import updateLocation from "./gameDetails/updateLocation";
 import updatePeriod from "./gameDetails/updatePeriod";
+import {
+  updateColorAway,
+  updateColorHome,
+} from "./gameDetails/updateTeamsColor";
+import getPageByMatch from "./getPageByMatch";
 
 const updateGame = async (game: IGame) => {
   const notion = new Client({
@@ -50,6 +54,24 @@ const updateGame = async (game: IGame) => {
         value: game.location,
         homeTeamName: game.home.name,
         awayTeamName: game.away.name,
+      });
+    }
+
+    if (properties["Domicile - Couleur"].rich_text.length === 0) {
+      await updateColorHome({
+        notion,
+        page,
+        value: game.colors.home,
+        teamName: game.home.name,
+      });
+    }
+
+    if (properties["Extérieur - Couleur"].rich_text.length === 0) {
+      await updateColorAway({
+        notion,
+        page,
+        value: game.colors.away,
+        teamName: game.home.name,
       });
     }
 

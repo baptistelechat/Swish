@@ -1,13 +1,14 @@
 import { Page } from "puppeteer";
-import { getLocation } from "../getDataFromMatchLink/getLocation";
 import { IGameDetails } from "../../interfaces/IGame";
-import { getScore } from "../getDataFromMatchLink/getScore";
-import { getMatchLink } from "../getDataFromGameCenter/getMatchLink";
+import getMatchLink from "../getDataFromGameCenter/getMatchLink";
+import getLocation from "../getDataFromMatchLink/getLocation";
+import getScore from "../getDataFromMatchLink/getScore";
+import getTeamsColor from "../getDataFromMatchLink/getTeamsColor";
 
-export const getGameDetails = async (page: Page) => {
+const getGamesDetails = async (page: Page) => {
   const [matchLinks] = await Promise.all([getMatchLink(page)]);
 
-  const gameDetails: IGameDetails[] = [];
+  const gamesDetails: IGameDetails[] = [];
 
   for (let index = 0; index < matchLinks.length; index++) {
     const matchLink = matchLinks[index].link;
@@ -15,19 +16,25 @@ export const getGameDetails = async (page: Page) => {
     if (matchLink) {
       await page.goto(matchLink);
 
-      const [location, score] = await Promise.all([
+      const [colors, location, score] = await Promise.all([
+        getTeamsColor(page),
         getLocation(page),
         getScore(page),
       ]);
 
       const gameDetail: IGameDetails = {
+        colors,
         location,
         score,
       };
 
-      gameDetails.push(gameDetail);
+      gamesDetails.push(gameDetail);
     } else {
-      gameDetails.push({
+      gamesDetails.push({
+        colors: {
+          home: null,
+          away: null,
+        },
         location: null,
         score: {
           period: matchLinks[index].period,
@@ -67,5 +74,7 @@ export const getGameDetails = async (page: Page) => {
       });
     }
   }
-  return gameDetails;
+  return gamesDetails;
 };
+
+export default getGamesDetails;

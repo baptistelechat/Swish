@@ -2,12 +2,12 @@ import { Page } from "puppeteer";
 import { IScore } from "../../interfaces/IScore";
 import { TPeriod } from "../../interfaces/TPeriod";
 
-export const getScore = async (page: Page) => {
+const getScore = async (page: Page) => {
   await Promise.race([
     page.waitForSelector(".period-scores-desktop > div"),
     page.waitForSelector("span.location"),
   ]);
-  
+
   return await page.evaluate(() => {
     // Score
     const scoreContainerElement = document.querySelector(
@@ -198,3 +198,5 @@ export const getScore = async (page: Page) => {
     return defaultScore;
   });
 };
+
+export default getScore;

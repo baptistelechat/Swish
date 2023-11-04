@@ -1,9 +1,9 @@
+import { Client } from "@notionhq/client";
+import chalk from "chalk";
 import dayjs from "dayjs";
 import { IGameWithoutDetails } from "../../interfaces/IGame";
-import { Client } from "@notionhq/client";
-import getPageByMatch from "./getPageByMatch";
 import getMatchId from "../gameData/getMatchId";
-import chalk from "chalk";
+import getPageByMatch from "./getPageByMatch";
 
 const addNewGame = async (game: IGameWithoutDetails) => {
   const notion = new Client({
@@ -37,7 +37,20 @@ const addNewGame = async (game: IGameWithoutDetails) => {
             },
           },
           "Journée de championnat": {
-            number: game.championshipDayNumber as number,
+            rich_text: [
+              {
+                type: "text",
+                text: {
+                  content: game.championshipDayNumber as string,
+                  link: null,
+                },
+              },
+            ],
+          },
+          Championnat: {
+            select: {
+              name: game.championshipName as string,
+            },
           },
           "Domicile - Nom": {
             rich_text: [

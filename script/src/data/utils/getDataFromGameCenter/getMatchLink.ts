@@ -1,7 +1,7 @@
 import { Page } from "puppeteer";
 import { TPeriod } from "../../interfaces/TPeriod";
 
-export const getMatchLink = async (page: Page) => {
+const getMatchLink = async (page: Page) => {
   return await page.evaluate(() => {
     // All games elements
     const gameElements = Array.from(document.querySelectorAll(".game-result"));
@@ -88,3 +88,5 @@ export const getMatchLink = async (page: Page) => {
     });
   });
 };
+
+export default getMatchLink;
