@@ -125,82 +125,86 @@ const launchScraping = async (retries = 0) => {
 // Schedule the script to run periodically
 (async () => {
   console.log(chalk.cyan(`🚀 Lancement ...`));
-  // cron.schedule("39 10 * * * ", async () => {
-  console.log(chalk.yellow(`⌛ Lancement quotidien - 9h00`));
-  await launchScraping();
+  cron.schedule("0 9 * * * ", async () => {
+    console.log(chalk.yellow(`⌛ Lancement quotidien - 9h00`));
+    await launchScraping();
 
-  setTimeout(async () => {
-    const scheduledGames = (await getPagesAfterNow()) as any[];
+    setTimeout(async () => {
+      const scheduledGames = (await getPagesAfterNow()) as any[];
 
-    const dates = scheduledGames.map((game) => {
-      return game.properties.Date.date.start;
-    });
+      const dates = scheduledGames.map((game) => {
+        return game.properties.Date.date.start;
+      });
 
-    const datesUniques = [...new Set(dates)];
+      const datesUniques = [...new Set(dates)].filter((date) =>
+        dayjs(date).isSame(dayjs(), "day")
+      );
 
-    datesUniques.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+      datesUniques.sort(
+        (a, b) => new Date(a).getTime() - new Date(b).getTime()
+      );
 
-    console.log(chalk.bgCyan("📅 Prochaine tâches :"));
-    console.log(datesUniques);
-    console.log("");
+      console.log(chalk.bgCyan("📅 Prochaine tâches :"));
+      console.log(datesUniques);
+      console.log("");
 
-    const defaultCurrentJob = {
-      cronString: "",
-      date: "",
-    };
+      const defaultCurrentJob = {
+        cronString: "",
+        date: "",
+      };
 
-    let currentJob = defaultCurrentJob;
+      let currentJob = defaultCurrentJob;
 
-    datesUniques.map(async (date, index) => {
-      const convertedDate = dayjs(date);
-      const cronString = `${convertedDate.minute()} ${convertedDate.hour()} * * ${convertedDate.day()}`;
+      datesUniques.map(async (date, index) => {
+        const convertedDate = dayjs(date);
+        const cronString = `${convertedDate.minute()} ${convertedDate.hour()} * * ${convertedDate.day()}`;
 
-      if (currentJob.cronString === "") {
-        currentJob = {
-          cronString,
-          date,
-        };
-      }
-
-      cron.schedule(cronString, async () => {
-        console.log(chalk.yellow(`⌛ Tâche principale - ${cronString}`));
-
-        if (currentJob.cronString === cronString) {
-          await launchScraping();
+        if (currentJob.cronString === "") {
+          currentJob = {
+            cronString,
+            date,
+          };
         }
 
-        const task = cron.schedule(`*/3 * * * *`, async () => {
-          console.log(chalk.yellow(`⌛ Boucle 3min - ${cronString}`));
+        cron.schedule(cronString, async () => {
+          console.log(chalk.yellow(`⌛ Tâche principale - ${cronString}`));
 
           if (currentJob.cronString === cronString) {
             await launchScraping();
-            setTimeout(async () => {
-              const notFinishedPages = await getNotFinishedPages(date);
-
-              if (notFinishedPages.length === 0) {
-                if (datesUniques[index + 1]) {
-                  const newConvertedDate = dayjs(datesUniques[index + 1]);
-                  const newCronString = `${newConvertedDate.minute()} ${newConvertedDate.hour()} * * ${newConvertedDate.day()}`;
-
-                  task.stop();
-                  console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
-
-                  currentJob = {
-                    cronString: newCronString,
-                    date: datesUniques[index + 1],
-                  };
-                } else {
-                  task.stop();
-                  console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
-
-                  currentJob = defaultCurrentJob;
-                }
-              }
-            }, 30 * 1000);
           }
+
+          const task = cron.schedule(`*/3 * * * *`, async () => {
+            console.log(chalk.yellow(`⌛ Boucle 3min - ${cronString}`));
+
+            if (currentJob.cronString === cronString) {
+              await launchScraping();
+              setTimeout(async () => {
+                const notFinishedPages = await getNotFinishedPages(date);
+
+                if (notFinishedPages.length === 0) {
+                  if (datesUniques[index + 1]) {
+                    const newConvertedDate = dayjs(datesUniques[index + 1]);
+                    const newCronString = `${newConvertedDate.minute()} ${newConvertedDate.hour()} * * ${newConvertedDate.day()}`;
+
+                    task.stop();
+                    console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
+
+                    currentJob = {
+                      cronString: newCronString,
+                      date: datesUniques[index + 1],
+                    };
+                  } else {
+                    task.stop();
+                    console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
+
+                    currentJob = defaultCurrentJob;
+                  }
+                }
+              }, 30 * 1000);
+            }
+          });
         });
       });
-    });
-  }, 30 * 1000);
-  // });
+    }, 30 * 1000);
+  });
 })();

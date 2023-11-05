@@ -109,7 +109,8 @@ const getScore = async (page: Page) => {
         if (activePeriodElement && gameClockTimeElement) {
           if (
             activePeriodElement.innerHTML === "Q2" &&
-            gameClockTimeElement.innerHTML === "Terminé"
+            (gameClockTimeElement.innerHTML === "Terminé" ||
+              gameClockTimeElement.innerHTML === "00:00")
           ) {
             return "Mi-temps";
           }

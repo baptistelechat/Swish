@@ -1,5 +1,11 @@
 import dayjs from "dayjs";
+import "dayjs/locale/fr";
+import calendar from "dayjs/plugin/calendar";
+import isBetween from "dayjs/plugin/isBetween";
 import { IGame } from "../../interfaces/IGame";
+
+dayjs.extend(calendar);
+dayjs.extend(isBetween);
 
 const getProgress = (gameData: IGame): string => {
   const date = gameData.date;
@@ -82,19 +88,37 @@ const getProgress = (gameData: IGame): string => {
 
   // A venir
   if (period === "A venir") {
-    const d = `${dayjs(date).date().toString().padStart(2, "0")}/${(
+    const formatDay = `${dayjs(date).date().toString().padStart(2, "0")}/${(
       dayjs(date).month() + 1
     )
       .toString()
       .padStart(2, "0")}/${dayjs(date).year()}`;
 
-    return `📅 Match à venir (${d} - ${dayjs(date)
-      .hour()
-      .toString()
-      .padStart(2, "0")}:${dayjs(date)
+    const time = `${dayjs(date).hour().toString().padStart(2, "0")}:${dayjs(
+      date
+    )
       .minute()
       .toString()
-      .padStart(2, "0")}) → ${homeTeam} / ${awayTeam}`;
+      .padStart(2, "0")}`;
+
+    const firstDayOfNextWeek = dayjs().startOf("week").day(1);
+    const lastDayOfNextWeek = dayjs().endOf("week").day(7);
+
+    if (dayjs(date).isSame(dayjs(), "day")) {
+      return `📅 Match à venir (Aujourd'hui - ${time}) → ${homeTeam} / ${awayTeam}`;
+    }
+
+    if (dayjs(date).isBetween(firstDayOfNextWeek, lastDayOfNextWeek)) {
+      const capitalize = (day: string) => {
+        return `${day[0].toUpperCase()}${day.slice(1)}`;
+      };
+
+      const day = capitalize(dayjs(date).locale("fr").format("dddd"));
+
+      return `📅 Match à venir (${day} - ${time}) → ${homeTeam} / ${awayTeam}`;
+    }
+
+    return `📅 Match à venir (${formatDay} - ${time}) → ${homeTeam} / ${awayTeam}`;
   }
 
   // Live
