@@ -1,11 +1,15 @@
 import { Client } from "@notionhq/client";
 import chalk from "chalk";
 import dayjs from "dayjs";
+import os from "os";
 import { IGameWithoutDetails } from "../../interfaces/IGame";
 import getMatchId from "../gameData/getMatchId";
 import getPageByMatch from "./getPageByMatch";
 
 const addNewGame = async (game: IGameWithoutDetails) => {
+  // OS
+  const systemOS = os.platform();
+
   const notion = new Client({
     auth: process.env.NOTION_API_KEY,
   });
@@ -33,7 +37,13 @@ const addNewGame = async (game: IGameWithoutDetails) => {
           },
           Date: {
             date: {
-              start: dayjs(game.date).toISOString(),
+              start: dayjs(game.date)
+                .hour(
+                  systemOS === "linux"
+                    ? dayjs(game.date).hour() - 1
+                    : dayjs(game.date).hour()
+                )
+                .toISOString(),
             },
           },
           "Journée de championnat": {

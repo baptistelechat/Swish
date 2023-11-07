@@ -190,7 +190,11 @@ const launchScraping = async (retries = 0) => {
 
         datesUniques.map(async (date, index) => {
           const convertedDate = dayjs(date);
-          const cronString = `${convertedDate.minute()} ${convertedDate.hour()} * * ${convertedDate.day()}`;
+          const cronString = `${convertedDate.minute()} ${
+            systemOS === "linux"
+              ? convertedDate.hour() - 1
+              : convertedDate.hour()
+          } * * ${convertedDate.day()}`;
 
           if (currentJob.cronString === "") {
             currentJob = {
@@ -217,7 +221,11 @@ const launchScraping = async (retries = 0) => {
                   if (notFinishedPages.length === 0) {
                     if (datesUniques[index + 1]) {
                       const newConvertedDate = dayjs(datesUniques[index + 1]);
-                      const newCronString = `${newConvertedDate.minute()} ${newConvertedDate.hour()} * * ${newConvertedDate.day()}`;
+                      const newCronString = `${newConvertedDate.minute()} ${
+                        systemOS === "linux"
+                          ? convertedDate.hour() - 1
+                          : convertedDate.hour()
+                      } * * ${newConvertedDate.day()}`;
 
                       task.stop();
                       console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
