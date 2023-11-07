@@ -105,7 +105,7 @@ const getProgress = (gameData: IGame): string => {
     const lastDayOfNextWeek = dayjs().endOf("week").day(7);
 
     if (dayjs(date).isSame(dayjs(), "day")) {
-      return `📅 Match à venir (Aujourd'hui - ${time}) → ${homeTeam} / ${awayTeam}`;
+      return `📍 Match à venir (Aujourd'hui - ${time}) → ${homeTeam} / ${awayTeam}`;
     }
 
     if (dayjs(date).isBetween(firstDayOfNextWeek, lastDayOfNextWeek)) {

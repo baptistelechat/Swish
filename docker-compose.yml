@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  swish_script:
+    build:
+      context: ./script
+      dockerfile: Dockerfile
+    container_name: swish_script
+    restart: always

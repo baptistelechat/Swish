@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import dotenv from "dotenv";
 import cron from "node-cron";
+import os from "os";
 import puppeteer from "puppeteer";
 import { scrapedUrl } from "./data/constants/scrapedUrl";
 import getGamesData from "./data/utils/gameData/getGamesData";
@@ -12,6 +13,9 @@ import getPagesAfterNow from "./data/utils/notion/getPagesAfterNow";
 import retryDelay from "./data/utils/retryDelay";
 
 dayjs.extend(customParseFormat);
+
+// OS
+const systemOS = os.platform();
 
 // Load environment variables from .env file
 dotenv.config();
@@ -28,78 +32,92 @@ const launchScraping = async (retries = 0) => {
   let browser;
 
   try {
-    browser = await puppeteer.launch({
-      args: ["--no-sandbox"],
-      defaultViewport: { width: 1920, height: 1080 },
-      headless: false,
-      // headless: "new",
-    });
-    const page = await browser.newPage();
+    if (process.env.HEADLESS === "1") {
+      browser = await puppeteer.launch({
+        args: ["--no-sandbox"],
+        // defaultViewport: { width: 1920, height: 1080 },
+        // headless: false,
+        headless: "new",
+      });
+    }
 
-    // ELITE
-    const eliteUrl = scrapedUrl[0];
+    if (process.env.HEADLESS === "0") {
+      browser = await puppeteer.launch({
+        args: ["--no-sandbox"],
+        defaultViewport: { width: 1920, height: 1080 },
+        headless: false,
+        // headless: "new",
+      });
+    }
 
-    // Go to Game center
-    await page.goto(eliteUrl.path);
-    console.log("");
-    console.log(chalk.underline(`Navigated to ${eliteUrl.id} :`));
+    if (browser) {
+      const page = await browser.newPage();
 
-    // Attendre que la div avec l'id game-center-result soit visible
-    await page.waitForSelector(
-      '#game-center-result[style="visibility: visible;"]'
-    );
+      // ELITE
+      const eliteUrl = scrapedUrl[0];
 
-    await getGamesData(page);
+      // Go to Game center
+      await page.goto(eliteUrl.path);
+      console.log("");
+      console.log(chalk.underline(`Navigated to ${eliteUrl.id} :`));
 
-    // PRO B
-    const proBUrl = scrapedUrl[1];
+      // Attendre que la div avec l'id game-center-result soit visible
+      await page.waitForSelector(
+        '#game-center-result[style="visibility: visible;"]'
+      );
 
-    // Go to Game center
-    await page.goto(proBUrl.path);
-    console.log("");
-    console.log(chalk.underline(`Navigated to ${proBUrl.id} :`));
+      await getGamesData(page);
 
-    // Attendre que la div avec l'id game-center-result soit visible
-    await page.waitForSelector(
-      '#game-center-result[style="visibility: visible;"]'
-    );
+      // PRO B
+      const proBUrl = scrapedUrl[1];
 
-    await getGamesData(page);
+      // Go to Game center
+      await page.goto(proBUrl.path);
+      console.log("");
+      console.log(chalk.underline(`Navigated to ${proBUrl.id} :`));
 
-    // ESPOIRS ElITE
-    const eliteEspoirsUrl = scrapedUrl[2];
+      // Attendre que la div avec l'id game-center-result soit visible
+      await page.waitForSelector(
+        '#game-center-result[style="visibility: visible;"]'
+      );
 
-    // Go to Game center
-    await page.goto(eliteEspoirsUrl.path);
-    console.log("");
-    console.log(chalk.underline(`Navigated to ${eliteEspoirsUrl.id} :`));
+      await getGamesData(page);
 
-    // Attendre que la div avec l'id game-center-result soit visible
-    await page.waitForSelector(
-      '#game-center-result[style="visibility: visible;"]'
-    );
+      // ESPOIRS ElITE
+      const eliteEspoirsUrl = scrapedUrl[2];
 
-    await getGamesData(page);
+      // Go to Game center
+      await page.goto(eliteEspoirsUrl.path);
+      console.log("");
+      console.log(chalk.underline(`Navigated to ${eliteEspoirsUrl.id} :`));
 
-    // ESPOIRS PRO B
-    const proBEspoirsUrl = scrapedUrl[3];
+      // Attendre que la div avec l'id game-center-result soit visible
+      await page.waitForSelector(
+        '#game-center-result[style="visibility: visible;"]'
+      );
 
-    // Go to Game center
-    await page.goto(proBEspoirsUrl.path);
-    console.log("");
-    console.log(chalk.underline(`Navigated to ${proBEspoirsUrl.id} :`));
+      await getGamesData(page);
 
-    // Attendre que la div avec l'id game-center-result soit visible
-    await page.waitForSelector(
-      '#game-center-result[style="visibility: visible;"]'
-    );
+      // ESPOIRS PRO B
+      const proBEspoirsUrl = scrapedUrl[3];
 
-    await getGamesData(page);
+      // Go to Game center
+      await page.goto(proBEspoirsUrl.path);
+      console.log("");
+      console.log(chalk.underline(`Navigated to ${proBEspoirsUrl.id} :`));
 
-    await browser.close();
-    console.log("");
-    console.log(chalk.bgGreen("🏁 Scraping complete"));
-    console.log("");
+      // Attendre que la div avec l'id game-center-result soit visible
+      await page.waitForSelector(
+        '#game-center-result[style="visibility: visible;"]'
+      );
+
+      await getGamesData(page);
+
+      await browser.close();
+      console.log("");
+      console.log(chalk.bgGreen("🏁 Scraping complete"));
+      console.log("");
+    }
   } catch (error) {
     console.error(chalk.bgRed("Scraping failed:", error));
     if (browser) {
@@ -126,7 +144,10 @@ const launchScraping = async (retries = 0) => {
 (async () => {
   console.log(chalk.cyan(`🚀 Lancement ...`));
 
-  const dailyCronJobHour = process.env.DAILY_CRON_JOB_HOUR;
+  const dailyCronJobHour =
+    systemOS === "linux"
+      ? Number(process.env.DAILY_CRON_JOB_HOUR) - 1
+      : String(process.env.DAILY_CRON_JOB_HOUR);
   const dailyCronJobMinute = process.env.DAILY_CRON_JOB_MINUTE;
 
   cron.schedule(
@@ -134,10 +155,9 @@ const launchScraping = async (retries = 0) => {
     async () => {
       console.log(
         chalk.yellow(
-          `⌛ Lancement quotidien - ${dailyCronJobHour}h${dailyCronJobMinute?.padStart(
-            2,
-            "0"
-          )}`
+          `⌛ Lancement quotidien - ${String(
+            process.env.DAILY_CRON_JOB_HOUR
+          )}h${String(dailyCronJobMinute)?.padStart(2, "0")}`
         )
       );
       await launchScraping();
