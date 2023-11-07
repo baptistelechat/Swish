@@ -19,7 +19,7 @@ const getGamesData = async (page: Page) => {
     await addNewGame(game);
   });
 
-  const gamesDetails = await getGamesDetails(page);
+  const gamesDetails = await getGamesDetails(page, gamesWithoutDetails);
 
   const gamesData: IGame[] = gamesWithoutDetails.map(
     (gameWithoutDetails, index) => {
