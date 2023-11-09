@@ -8,23 +8,35 @@ const getTeamsColor = async (
 ) => {
   try {
     await Promise.race([
+      page.waitForSelector(".sw-fixture-banner-main-score-box-secondary"),
       page.waitForSelector(".sw-fixture-info-summary"),
       page.waitForSelector("span.location"),
     ]);
 
     return await page.evaluate(() => {
-      // Home color
-      const homeColor = getComputedStyle(
-        document.documentElement
-      ).getPropertyValue("--sw-fixture-competitor-home-color");
-      // Home color
-      const awayColor = getComputedStyle(
-        document.documentElement
-      ).getPropertyValue("--sw-fixture-competitor-away-color");
+      const notStyleScoreContainerElement = document.querySelector(
+        ".sw-fixture-banner-main-score-box-secondary"
+      );
+
+      if (!notStyleScoreContainerElement) {
+        // Home color
+        const homeColor = getComputedStyle(
+          document.documentElement
+        ).getPropertyValue("--sw-fixture-competitor-home-color");
+        // Home color
+        const awayColor = getComputedStyle(
+          document.documentElement
+        ).getPropertyValue("--sw-fixture-competitor-away-color");
+
+        return {
+          home: homeColor,
+          away: awayColor,
+        };
+      }
 
       return {
-        home: homeColor,
-        away: awayColor,
+        home: null,
+        away: null,
       };
     });
   } catch (error: any) {

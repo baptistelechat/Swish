@@ -8,27 +8,42 @@ const getLocation = async (
 ) => {
   try {
     await Promise.race([
+      page.waitForSelector(".sw-fixture-banner-main-score-box-secondary"),
       page.waitForSelector(".sw-fixture-info-summary"),
       page.waitForSelector("span.location"),
     ]);
 
     return await page.evaluate(() => {
-      // Location
-      const locationElement = document.querySelector(
-        ".sw-fixture-info-summary"
-      ) as HTMLSpanElement;
+      const notStyleScoreContainerElement = document.querySelector(
+        ".sw-fixture-banner-main-score-box-secondary"
+      );
 
-      const locationSpan = document.querySelector("span.location");
-      if (locationSpan) {
-        return locationSpan.innerHTML.trim();
-      }
-      if (locationElement) {
-        const location = locationElement.innerHTML
-          .trim()
-          .split(",")[1]
-          .split(" - ")[1]
-          .split("<span")[0];
-        return location;
+      if (!notStyleScoreContainerElement) {
+        // Location
+        const locationElement = document.querySelector(
+          ".sw-fixture-info-summary"
+        ) as HTMLSpanElement;
+
+        const locationSpan = document.querySelector("span.location");
+        if (locationSpan) {
+          return locationSpan.innerHTML.trim();
+        }
+        if (locationElement) {
+          const location = locationElement.innerHTML
+            .trim()
+            .split(",")[1]
+            .split(" - ")[1]
+            .split("<span")[0];
+          return location;
+        }
+      } else {
+        const locationElement = document.querySelector(
+          ".sw-fixture-banner-main-score-box-venue>div"
+        ) as HTMLDivElement;
+
+        if (locationElement) {
+          return locationElement.innerHTML.trim();
+        }
       }
 
       return null;
