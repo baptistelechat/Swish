@@ -102,6 +102,17 @@ const addNewGame = async (game: IGameWithoutDetails) => {
           "Extérieur - Logo (lg)": {
             url: game.away.logo?.lg as string,
           },
+          Période: {
+            rich_text: [
+              {
+                type: "text",
+                text: {
+                  content: "A venir",
+                  link: null,
+                },
+              },
+            ],
+          },
         },
       });
     } catch (error: any) {

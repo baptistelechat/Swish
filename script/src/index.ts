@@ -1,144 +1,20 @@
 import chalk from "chalk";
 import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
 import dotenv from "dotenv";
 import cron from "node-cron";
 import os from "os";
-import puppeteer from "puppeteer";
-import { scrapedUrl } from "./data/constants/scrapedUrl";
-import getGamesData from "./data/utils/gameData/getGamesData";
-import getCurrentTimestamp from "./data/utils/getCurrentTimestamp";
+import currentJobLog from "./data/utils/currentJobLog";
+import launchScraping from "./data/utils/launchScraping";
 import getNotFinishedPages from "./data/utils/notion/getNotFinishedPages";
 import getPagesAfterNow from "./data/utils/notion/getPagesAfterNow";
-import retryDelay from "./data/utils/retryDelay";
-
-dayjs.extend(customParseFormat);
 
 // OS
 const systemOS = os.platform();
 
+console.log(`💻 ${systemOS}`);
+
 // Load environment variables from .env file
 dotenv.config();
-
-const maxRetries = 3;
-
-const launchScraping = async (retries = 0) => {
-  const timestamp = getCurrentTimestamp();
-
-  console.log("");
-  console.log(chalk.bgGray(`🚀 ${timestamp}`));
-  console.log(chalk.bgCyan("🚩 Starting scraping..."));
-
-  let browser;
-
-  try {
-    if (process.env.HEADLESS === "1") {
-      browser = await puppeteer.launch({
-        args: ["--no-sandbox"],
-        // defaultViewport: { width: 1920, height: 1080 },
-        // headless: false,
-        headless: "new",
-      });
-    }
-
-    if (process.env.HEADLESS === "0") {
-      browser = await puppeteer.launch({
-        args: ["--no-sandbox"],
-        defaultViewport: { width: 1920, height: 1080 },
-        headless: false,
-        // headless: "new",
-      });
-    }
-
-    if (browser) {
-      const page = await browser.newPage();
-
-      // ELITE
-      const eliteUrl = scrapedUrl[0];
-
-      // Go to Game center
-      await page.goto(eliteUrl.path);
-      console.log("");
-      console.log(chalk.underline(`Navigated to ${eliteUrl.id} :`));
-
-      // Attendre que la div avec l'id game-center-result soit visible
-      await page.waitForSelector(
-        '#game-center-result[style="visibility: visible;"]'
-      );
-
-      await getGamesData(page);
-
-      // PRO B
-      const proBUrl = scrapedUrl[1];
-
-      // Go to Game center
-      await page.goto(proBUrl.path);
-      console.log("");
-      console.log(chalk.underline(`Navigated to ${proBUrl.id} :`));
-
-      // Attendre que la div avec l'id game-center-result soit visible
-      await page.waitForSelector(
-        '#game-center-result[style="visibility: visible;"]'
-      );
-
-      await getGamesData(page);
-
-      // ESPOIRS ElITE
-      const eliteEspoirsUrl = scrapedUrl[2];
-
-      // Go to Game center
-      await page.goto(eliteEspoirsUrl.path);
-      console.log("");
-      console.log(chalk.underline(`Navigated to ${eliteEspoirsUrl.id} :`));
-
-      // Attendre que la div avec l'id game-center-result soit visible
-      await page.waitForSelector(
-        '#game-center-result[style="visibility: visible;"]'
-      );
-
-      await getGamesData(page);
-
-      // ESPOIRS PRO B
-      const proBEspoirsUrl = scrapedUrl[3];
-
-      // Go to Game center
-      await page.goto(proBEspoirsUrl.path);
-      console.log("");
-      console.log(chalk.underline(`Navigated to ${proBEspoirsUrl.id} :`));
-
-      // Attendre que la div avec l'id game-center-result soit visible
-      await page.waitForSelector(
-        '#game-center-result[style="visibility: visible;"]'
-      );
-
-      await getGamesData(page);
-
-      await browser.close();
-      console.log("");
-      console.log(chalk.bgGreen("🏁 Scraping complete"));
-      console.log("");
-    }
-  } catch (error) {
-    console.error(chalk.bgRed("Scraping failed:", error));
-    if (browser) {
-      await browser.close();
-    }
-
-    if (retries < maxRetries) {
-      console.log(
-        `Retrying after ${retryDelay(0, 0, 10) / 1000} seconds... (${
-          retries + 1
-        }/${maxRetries})`
-      );
-      await new Promise((resolve) => setTimeout(resolve, retryDelay(0, 0, 10)));
-      await launchScraping(retries + 1);
-    } else {
-      console.error(chalk.bgRed("Max retries reached. Exiting..."));
-      // Forcefully exit the script with a non-zero exit code
-      process.exit(1);
-    }
-  }
-};
 
 // Schedule the script to run periodically
 (async () => {
@@ -196,22 +72,39 @@ const launchScraping = async (retries = 0) => {
               : convertedDate.hour()
           } * * ${convertedDate.day()}`;
 
+          const formatCronString = `${dayjs(date).get("D")}/${
+            dayjs(date).month() + 1
+          }/${dayjs(date).year()} - ${
+            systemOS === "linux"
+              ? (dayjs(date).hour() - 1).toString().padStart(2, "0")
+              : dayjs(date).hour().toString().padStart(2, "0")
+          }:${dayjs(date)
+            .minute()
+            .toString()
+            .padStart(2, "0")} (${cronString})`;
+
           if (currentJob.cronString === "") {
             currentJob = {
               cronString,
               date,
             };
+
+            currentJobLog(currentJob);
           }
 
           cron.schedule(cronString, async () => {
-            console.log(chalk.yellow(`⌛ Tâche principale - ${cronString}`));
+            console.log(
+              chalk.yellow(
+                `⏰ Tâche principale - ${formatCronString}`
+              )
+            );
 
             if (currentJob.cronString === cronString) {
               await launchScraping();
             }
 
             const task = cron.schedule(`*/3 * * * *`, async () => {
-              console.log(chalk.yellow(`⌛ Boucle 3min - ${cronString}`));
+              console.log(chalk.yellow(`⏰ Boucle 3min - ${formatCronString}`));
 
               if (currentJob.cronString === cronString) {
                 await launchScraping();
@@ -223,20 +116,27 @@ const launchScraping = async (retries = 0) => {
                       const newConvertedDate = dayjs(datesUniques[index + 1]);
                       const newCronString = `${newConvertedDate.minute()} ${
                         systemOS === "linux"
-                          ? convertedDate.hour() - 1
-                          : convertedDate.hour()
+                          ? newConvertedDate.hour() - 1
+                          : newConvertedDate.hour()
                       } * * ${newConvertedDate.day()}`;
 
                       task.stop();
-                      console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
 
                       currentJob = {
                         cronString: newCronString,
                         date: datesUniques[index + 1],
                       };
+
+                      console.log(
+                        chalk.magenta(`❌ Stop - ${formatCronString}`)
+                      );
+                      currentJobLog(currentJob);
                     } else {
                       task.stop();
-                      console.log(chalk.yellow(`⌛ Stop - ${cronString}`));
+                      console.log(
+                        chalk.magenta(`❌ Stop - ${formatCronString}`)
+                      );
+                      console.log(chalk.magenta("✅ Fin de journée"));
 
                       currentJob = defaultCurrentJob;
                     }
