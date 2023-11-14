@@ -1,12 +1,14 @@
-import Menu from "@/components/Menu";
+import FormContainer from "@/components/FormContainer";
+import getGamesIdBeforeToday from "@/lib/notion/getGamesIdBeforeToday";
 
-export default function Home() {
+const Home = async () => {
+  const gamesId = (await getGamesIdBeforeToday()) as any[];
+
   return (
-    <main className="w-screen h-screen p-2 flex justify-center items-center">
-      <div className="flex gap-2">
-        <Menu />
-        <Menu />
-      </div>
+    <main className="w-screen h-screen p-8 justify-center">
+      <FormContainer gamesId={gamesId} />
     </main>
   );
-}
+};
+
+export default Home;
