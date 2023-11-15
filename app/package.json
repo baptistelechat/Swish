@@ -23,6 +23,7 @@
     "@radix-ui/react-toggle": "^1.0.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "colorthief": "^2.4.0",
     "date-fns": "^2.30.0",
     "dayjs": "^1.11.10",
     "lucide-react": "^0.292.0",

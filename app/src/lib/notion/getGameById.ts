@@ -1,5 +1,7 @@
 "use server";
+import { Game } from "@/types/Game";
 import { Client } from "@notionhq/client";
+import convertNotionProperty from "./convertNotionProperty";
 
 const getGameById = async (matchId: string) => {
   const notion = new Client({ auth: process.env.NOTION_API_KEY });
@@ -22,7 +24,27 @@ const getGameById = async (matchId: string) => {
     return undefined;
   }
 
-  return results[0];
+  const properties = results[0].properties;
+
+  const result: { [key: string]: any } = {};
+
+  for (const key in properties) {
+    if (Object.prototype.hasOwnProperty.call(properties[key], "type")) {
+      const type = properties[key].type;
+      const data = convertNotionProperty(properties[key], type);
+      result[key] = data;
+    }
+  }
+
+  const sortedKeys = Object.keys(result).sort();
+
+  const sortedResult: { [key: string]: any } = {};
+
+  sortedKeys.forEach((key) => {
+    sortedResult[key] = result[key];
+  });
+
+  return sortedResult as Game;
 };
 
 export default getGameById;

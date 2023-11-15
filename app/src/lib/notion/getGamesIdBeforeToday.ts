@@ -11,7 +11,7 @@ const getGamesIdBeforeToday = async () => {
     filter: {
       property: "Date",
       date: {
-        before: dayjs().toISOString(),
+        before: dayjs().hour(0).minute(0).toISOString(),
       },
     },
   });
