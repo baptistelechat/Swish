@@ -1,9 +1,8 @@
-import { RGBColor } from "colorthief";
 import { Dispatch, SetStateAction } from "react";
 
 export interface IColorProps {
-  homeTeamPaletteColor: RGBColor[];
-  setHomeTeamPaletteColor: Dispatch<SetStateAction<RGBColor[]>>;
-  awayTeamPaletteColor: RGBColor[];
-  setAwayTeamPaletteColor: Dispatch<SetStateAction<RGBColor[]>>;
+  homeTeamPaletteColor: string[];
+  awayTeamPaletteColor: string[];
+  setHomeTeamPaletteColor: Dispatch<SetStateAction<string[]>>;
+  setAwayTeamPaletteColor: Dispatch<SetStateAction<string[]>>;
 }

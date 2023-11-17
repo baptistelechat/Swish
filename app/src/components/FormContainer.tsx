@@ -1,6 +1,5 @@
 "use client";
 import { Game } from "@/types/Game";
-import { RGBColor } from "colorthief";
 import { useState } from "react";
 import CurrentGameBoard from "./CurrentGameBoard";
 import GameForm from "./GameForm";
@@ -12,17 +11,16 @@ interface IFormContainerProps {
 
 const FormContainer = ({ gamesId }: IFormContainerProps) => {
   const [currentGame, setCurrentGame] = useState<Game | undefined>(undefined);
-
-  const [homeTeamPaletteColor, setHomeTeamPaletteColor] = useState<RGBColor[]>(
+  const [homeTeamPaletteColor, setHomeTeamPaletteColor] = useState<string[]>(
     []
   );
-  const [awayTeamPaletteColor, setAwayTeamPaletteColor] = useState<RGBColor[]>(
+  const [awayTeamPaletteColor, setAwayTeamPaletteColor] = useState<string[]>(
     []
   );
 
   return (
-    <div className="flex h-full justify-center items-center gap-8">
-      <div className="h-full w-1/3 flex flex-col gap-6">
+    <div className="h-full flex justify-center items-center gap-8">
+      <div className="h-full max-w-1/2 w-1/3 flex flex-col gap-6">
         <GameForm gamesId={gamesId} setCurrentGame={setCurrentGame} />
         <CurrentGameBoard
           currentGame={currentGame}

@@ -17,8 +17,11 @@ const getGamesIdBeforeToday = async () => {
   });
 
   const results = response.results as any[];
+  const gamesId = results.map(
+    (result) => result.properties.Match.title[0].text.content
+  ) as string[];
 
-  return results.map((result) => result.properties.Match.title[0].text.content);
+  return gamesId;
 };
 
 export default getGamesIdBeforeToday;

@@ -1,20 +1,17 @@
 "use client";
 
 import { IColorProps } from "@/interfaces/IColorProps";
-import ColorThief, { RGBColor } from "colorthief";
+import convertColorPaletteToHex from "@/lib/convertColorPaletteToHex";
+import sortColorPaletteByLuminance from "@/lib/sortColorPaletteByLuminance";
+import ColorThief from "colorthief";
 import { useEffect } from "react";
 
 const TeamColor = ({
   homeTeamPaletteColor,
   setHomeTeamPaletteColor,
   awayTeamPaletteColor,
-  setAwayTeamPaletteColor
+  setAwayTeamPaletteColor,
 }: IColorProps) => {
-  const getLuminance = (color: RGBColor) => {
-    const [r, g, b] = color;
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  };
-
   useEffect(() => {
     const colorThief = new ColorThief();
 
@@ -26,27 +23,22 @@ const TeamColor = ({
       // Make sure image is finished loading
       if (homeTeamLogo.complete) {
         const homeTeamPaletteColor = colorThief.getPalette(homeTeamLogo, 2);
-        const sortedHomeTeamPaletteColor = homeTeamPaletteColor.sort(
-          (color1, color2) => {
-            const luminance1 = getLuminance(color1);
-            const luminance2 = getLuminance(color2);
-            return luminance1 - luminance2;
-          }
+        const sortedHomeTeamPaletteColor =
+          sortColorPaletteByLuminance(homeTeamPaletteColor);
+        const convertSortedHomeTeamPaletteColorToHex = convertColorPaletteToHex(
+          sortedHomeTeamPaletteColor
         );
 
-        setHomeTeamPaletteColor(sortedHomeTeamPaletteColor);
+        setHomeTeamPaletteColor(convertSortedHomeTeamPaletteColorToHex);
       } else {
         homeTeamLogo.addEventListener("load", function () {
           const homeTeamPaletteColor = colorThief.getPalette(homeTeamLogo, 2);
-          const sortedHomeTeamPaletteColor = homeTeamPaletteColor.sort(
-            (color1, color2) => {
-              const luminance1 = getLuminance(color1);
-              const luminance2 = getLuminance(color2);
-              return luminance1 - luminance2;
-            }
-          );
+          const sortedHomeTeamPaletteColor =
+            sortColorPaletteByLuminance(homeTeamPaletteColor);
+          const convertSortedHomeTeamPaletteColorToHex =
+            convertColorPaletteToHex(sortedHomeTeamPaletteColor);
 
-          setHomeTeamPaletteColor(sortedHomeTeamPaletteColor);
+          setHomeTeamPaletteColor(convertSortedHomeTeamPaletteColorToHex);
         });
       }
     }
@@ -59,27 +51,22 @@ const TeamColor = ({
       // Make sure image is finished loading
       if (awayTeamLogo.complete) {
         const awayTeamPaletteColor = colorThief.getPalette(awayTeamLogo, 2);
-        const sortedAwayTeamPaletteColor = awayTeamPaletteColor.sort(
-          (color1, color2) => {
-            const luminance1 = getLuminance(color1);
-            const luminance2 = getLuminance(color2);
-            return luminance1 - luminance2;
-          }
+        const sortedAwayTeamPaletteColor =
+          sortColorPaletteByLuminance(awayTeamPaletteColor);
+        const convertSortedAwayTeamPaletteColorToHex = convertColorPaletteToHex(
+          sortedAwayTeamPaletteColor
         );
 
-        setAwayTeamPaletteColor(sortedAwayTeamPaletteColor);
+        setAwayTeamPaletteColor(convertSortedAwayTeamPaletteColorToHex);
       } else {
         awayTeamLogo.addEventListener("load", function () {
           const awayTeamPaletteColor = colorThief.getPalette(awayTeamLogo, 2);
-          const sortedAwayTeamPaletteColor = awayTeamPaletteColor.sort(
-            (color1, color2) => {
-              const luminance1 = getLuminance(color1);
-              const luminance2 = getLuminance(color2);
-              return luminance1 - luminance2;
-            }
-          );
+          const sortedAwayTeamPaletteColor =
+            sortColorPaletteByLuminance(awayTeamPaletteColor);
+          const convertSortedAwayTeamPaletteColorToHex =
+            convertColorPaletteToHex(sortedAwayTeamPaletteColor);
 
-          setAwayTeamPaletteColor(sortedAwayTeamPaletteColor);
+          setAwayTeamPaletteColor(convertSortedAwayTeamPaletteColorToHex);
         });
       }
     }
@@ -94,7 +81,7 @@ const TeamColor = ({
               <div
                 className="w-8 h-8 rounded"
                 style={{
-                  backgroundColor: `rgb(${color[0]} ${color[1]} ${color[2]})`,
+                  backgroundColor: color,
                 }}
               />
             ))}
@@ -104,7 +91,7 @@ const TeamColor = ({
               <div
                 className="w-8 h-8 rounded"
                 style={{
-                  backgroundColor: `rgb(${color[0]} ${color[1]} ${color[2]})`,
+                  backgroundColor: color,
                 }}
               />
             ))}

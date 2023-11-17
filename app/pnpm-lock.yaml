@@ -50,6 +50,9 @@ dependencies:
   colorthief:
     specifier: ^2.4.0
     version: 2.4.0
+  colortranslator:
+    specifier: ^3.0.2
+    version: 3.0.2
   date-fns:
     specifier: ^2.30.0
     version: 2.30.0
@@ -1534,6 +1537,10 @@ packages:
     dependencies:
       '@lokesh.dhakar/quantize': 1.3.0
       get-pixels: 3.3.3
+    dev: false
+
+  /colortranslator@3.0.2:
+    resolution: {integrity: sha512-BAi+1mC33m9WGMrZXGke+IHzs8DDG3EKazim8mJ/kGF3VihNmsV9Yh8mX/9emQK1qThQZ/TatYTxoLUFnCqOOg==}
     dev: false
 
   /combined-stream@1.0.8:
