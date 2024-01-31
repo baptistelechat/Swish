@@ -10,11 +10,10 @@ const currentJobLog = (currentJob: { cronString: string; date: string }) => {
 
   const formatCronString = `${dayjs(date).get("D")}/${
     dayjs(date).month() + 1
-  }/${dayjs(date).year()} - ${
-    systemOS === "linux"
-      ? (dayjs(date).hour() - 1).toString().padStart(2, "0")
-      : dayjs(date).hour().toString().padStart(2, "0")
-  }:${dayjs(date).minute().toString().padStart(2, "0")} (${
+  }/${dayjs(date).year()} - ${dayjs(date)
+    .hour()
+    .toString()
+    .padStart(2, "0")}:${dayjs(date).minute().toString().padStart(2, "0")} (${
     currentJob.cronString
   })`;
 

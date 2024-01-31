@@ -28,7 +28,7 @@ const endGame = async (game: IGame) => {
   const page = (await getPageByMatch(matchId)).page as any;
   const matchExist = (await getPageByMatch(matchId)).exist;
 
-  if (matchExist) {
+  if (page) {
     const properties = page.properties;
     const finalHome = game.score?.final.home;
     const finalAway = game.score?.final.away;

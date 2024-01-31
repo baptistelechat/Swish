@@ -20,11 +20,8 @@ dotenv.config();
 (async () => {
   console.log(chalk.cyan(`🚀 Lancement ...`));
 
-  const dailyCronJobHour =
-    systemOS === "linux"
-      ? Number(process.env.DAILY_CRON_JOB_HOUR) - 1
-      : String(process.env.DAILY_CRON_JOB_HOUR);
-  const dailyCronJobMinute = process.env.DAILY_CRON_JOB_MINUTE;
+  const dailyCronJobHour = Number(process.env.DAILY_CRON_JOB_HOUR);
+  const dailyCronJobMinute = Number(process.env.DAILY_CRON_JOB_MINUTE);
 
   cron.schedule(
     `${dailyCronJobMinute} ${dailyCronJobHour} * * * `,
@@ -66,19 +63,14 @@ dotenv.config();
 
         datesUniques.map(async (date, index) => {
           const convertedDate = dayjs(date);
-          const cronString = `${convertedDate.minute()} ${
-            systemOS === "linux"
-              ? convertedDate.hour() - 1
-              : convertedDate.hour()
-          } * * ${convertedDate.day()}`;
+          const cronString = `${convertedDate.minute()} ${convertedDate.hour()} * * ${convertedDate.day()}`;
 
           const formatCronString = `${dayjs(date).get("D")}/${
             dayjs(date).month() + 1
-          }/${dayjs(date).year()} - ${
-            systemOS === "linux"
-              ? (dayjs(date).hour() - 1).toString().padStart(2, "0")
-              : dayjs(date).hour().toString().padStart(2, "0")
-          }:${dayjs(date)
+          }/${dayjs(date).year()} - ${dayjs(date)
+            .hour()
+            .toString()
+            .padStart(2, "0")}:${dayjs(date)
             .minute()
             .toString()
             .padStart(2, "0")} (${cronString})`;
@@ -94,9 +86,7 @@ dotenv.config();
 
           cron.schedule(cronString, async () => {
             console.log(
-              chalk.yellow(
-                `⏰ Tâche principale - ${formatCronString}`
-              )
+              chalk.yellow(`⏰ Tâche principale - ${formatCronString}`)
             );
 
             if (currentJob.cronString === cronString) {
@@ -114,11 +104,7 @@ dotenv.config();
                   if (notFinishedPages.length === 0) {
                     if (datesUniques[index + 1]) {
                       const newConvertedDate = dayjs(datesUniques[index + 1]);
-                      const newCronString = `${newConvertedDate.minute()} ${
-                        systemOS === "linux"
-                          ? newConvertedDate.hour() - 1
-                          : newConvertedDate.hour()
-                      } * * ${newConvertedDate.day()}`;
+                      const newCronString = `${newConvertedDate.minute()} ${newConvertedDate.hour()} * * ${newConvertedDate.day()}`;
 
                       task.stop();
 

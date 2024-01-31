@@ -37,13 +37,7 @@ const addNewGame = async (game: IGameWithoutDetails) => {
           },
           Date: {
             date: {
-              start: dayjs(game.date)
-                .hour(
-                  systemOS === "linux"
-                    ? dayjs(game.date).hour() - 1
-                    : dayjs(game.date).hour()
-                )
-                .toISOString(),
+              start: dayjs(game.date).toISOString(),
             },
           },
           "Journée de championnat": {

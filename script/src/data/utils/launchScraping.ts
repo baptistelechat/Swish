@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import os from "os";
 import puppeteer from "puppeteer";
 import { scrapedUrl } from "../constants/scrapedUrl";
 import getGamesData from "./gameData/getGamesData";
@@ -17,22 +18,43 @@ const launchScraping = async (retries = 0) => {
   let browser;
 
   try {
+    const systemOS = os.platform();
     if (process.env.HEADLESS === "1") {
-      browser = await puppeteer.launch({
-        args: ["--no-sandbox"],
-        // defaultViewport: { width: 1920, height: 1080 },
-        // headless: false,
-        headless: "new",
-      });
+      if (systemOS === "linux") {
+        browser = await puppeteer.launch({
+          args: ["--no-sandbox"],
+          executablePath: "/usr/bin/chromium-browser",
+          // defaultViewport: { width: 1920, height: 1080 },
+          // headless: false,
+          headless: "new",
+        });
+      } else {
+        browser = await puppeteer.launch({
+          args: ["--no-sandbox"],
+          // defaultViewport: { width: 1920, height: 1080 },
+          // headless: false,
+          headless: "new",
+        });
+      }
     }
 
     if (process.env.HEADLESS === "0") {
-      browser = await puppeteer.launch({
-        args: ["--no-sandbox"],
-        defaultViewport: { width: 1920, height: 1080 },
-        headless: false,
-        // headless: "new",
-      });
+      if (systemOS === "linux") {
+        browser = await puppeteer.launch({
+          args: ["--no-sandbox"],
+          executablePath: "/usr/bin/chromium-browser",
+          defaultViewport: { width: 1920, height: 1080 },
+          headless: false,
+          // headless: "new",
+        });
+      } else {
+        browser = await puppeteer.launch({
+          args: ["--no-sandbox"],
+          defaultViewport: { width: 1920, height: 1080 },
+          headless: false,
+          // headless: "new",
+        });
+      }
     }
 
     if (browser) {
