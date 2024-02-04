@@ -1,17 +1,29 @@
 "use client";
 
-import { IColorProps } from "@/interfaces/IColorProps";
 import convertColorPaletteToHex from "@/lib/convertColorPaletteToHex";
 import sortColorPaletteByLuminance from "@/lib/sortColorPaletteByLuminance";
+import useAwayTeamPaletteColorStore from "@/lib/store/awayTeamPaletteColor.store";
+import useHomeTeamPaletteColorStore from "@/lib/store/homeTeamPaletteColor.store";
 import ColorThief from "colorthief";
 import { useEffect } from "react";
 
-const TeamColor = ({
-  homeTeamPaletteColor,
-  setHomeTeamPaletteColor,
-  awayTeamPaletteColor,
-  setAwayTeamPaletteColor,
-}: IColorProps) => {
+const TeamColor = () => {
+  // HomeTeamPaletteColor
+  const homeTeamPaletteColor = useHomeTeamPaletteColorStore(
+    (s) => s.homeTeamPaletteColor
+  );
+  const setHomeTeamPaletteColor = useHomeTeamPaletteColorStore(
+    (s) => s.setHomeTeamPaletteColor
+  );
+
+  // AwayTeamPaletteColor
+  const awayTeamPaletteColor = useAwayTeamPaletteColorStore(
+    (s) => s.awayTeamPaletteColor
+  );
+  const setAwayTeamPaletteColor = useAwayTeamPaletteColorStore(
+    (s) => s.setAwayTeamPaletteColor
+  );
+
   useEffect(() => {
     const colorThief = new ColorThief();
 
@@ -70,16 +82,17 @@ const TeamColor = ({
         });
       }
     }
-  }, []);
+  }, [setAwayTeamPaletteColor, setHomeTeamPaletteColor]);
 
   return (
     <>
-      <div className="flex flex-col gap-1 items-center">
+      <div className="flex flex-col items-center gap-1">
         <div className="flex gap-1">
           <div className="flex flex-col gap-1">
             {homeTeamPaletteColor.map((color) => (
               <div
-                className="w-8 h-8 rounded"
+                className="size-8 rounded"
+                key={color}
                 style={{
                   backgroundColor: color,
                 }}
@@ -89,7 +102,8 @@ const TeamColor = ({
           <div className="flex flex-col gap-1">
             {awayTeamPaletteColor.map((color) => (
               <div
-                className="w-8 h-8 rounded"
+                className="size-8 rounded"
+                key={color}
                 style={{
                   backgroundColor: color,
                 }}

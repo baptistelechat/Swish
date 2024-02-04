@@ -1,20 +1,22 @@
-import { IColorProps } from "@/interfaces/IColorProps";
-import { Game } from "@/types/Game";
+"use client";
+
+import useAwayTeamPaletteColorStore from "@/lib/store/awayTeamPaletteColor.store";
+import useGameStore from "@/lib/store/game.store";
+import useHomeTeamPaletteColorStore from "@/lib/store/homeTeamPaletteColor.store";
 import { ColorTranslator } from "colortranslator";
 import Image from "next/image";
 import Angle from "./GenerateImage/components/Angle";
 
-interface IGenerateImageProps {
-  currentGame: Game | undefined;
-}
+const GenerateImage = () => {
+  const game = useGameStore((s) => s.game);
+  const homeTeamPaletteColor = useHomeTeamPaletteColorStore(
+    (s) => s.homeTeamPaletteColor
+  );
+  const awayTeamPaletteColor = useAwayTeamPaletteColorStore(
+    (s) => s.awayTeamPaletteColor
+  );
 
-const GenerateImage = ({
-  currentGame,
-  homeTeamPaletteColor,
-  awayTeamPaletteColor,
-}: IGenerateImageProps &
-  Omit<IColorProps, "setHomeTeamPaletteColor" | "setAwayTeamPaletteColor">) => {
-  if (!currentGame) {
+  if (!game) {
     return null;
   }
 
@@ -35,27 +37,25 @@ const GenerateImage = ({
       (new ColorTranslator(awayTeamPaletteColor[0]).L + 0.05)
   );
 
-  console.log(homeTeamPaletteContrast, awayTeamPaletteContrast);
-
   return (
-    <div className="relative w-[1080px] h-[1080px] bg-primary-foreground overflow-hidden scale-50">
+    <div className="bg-primary-foreground relative size-[1080px] overflow-hidden">
       {/* Angle supérieur (Domicile) */}
       <div
-        className="absolute top-0 left-0 w-1/2 h-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded shadow-xl"
+        className="absolute left-0 top-0 size-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded shadow-xl"
         style={{
           backgroundColor: homeTeamPaletteColor[0],
         }}
       />
       {/* Angle inférieur (Extérieur) */}
       <div
-        className="absolute bottom-0 right-0 w-1/2 h-1/2 translate-x-1/2 translate-y-1/2 rotate-45 rounded shadow-xl"
+        className="absolute bottom-0 right-0 size-1/2 translate-x-1/2 translate-y-1/2 rotate-45 rounded shadow-xl"
         style={{
           backgroundColor: awayTeamPaletteColor[0],
         }}
       />
       {/* Domicile - Logo */}
       <div
-        className="absolute top-1/2 left-[22%] -translate-x-1/2 -translate-y-1/2 w-1/4 h-1/4 flex items-center justify-center font-bold text-3xl rounded shadow-2xl"
+        className="absolute left-[22%] top-1/2 flex size-1/4 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded text-3xl font-bold shadow-2xl"
         style={{
           backgroundColor:
             homeTeamPaletteContrast <= minContrast
@@ -67,7 +67,7 @@ const GenerateImage = ({
         }}
       >
         <Image
-          src={currentGame["Domicile - Logo (md)"]}
+          src={game["Domicile - Logo (md)"]}
           width={200}
           height={200}
           alt="Home Picture"
@@ -75,7 +75,7 @@ const GenerateImage = ({
       </div>
       {/* Extérieur - Logo */}
       <div
-        className="absolute top-1/2 right-[22%] translate-x-1/2 -translate-y-1/2 w-1/4 h-1/4 flex items-center justify-center font-bold text-3xl rounded shadow-2xl"
+        className="absolute right-[22%] top-1/2 flex size-1/4 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded text-3xl font-bold shadow-2xl"
         style={{
           backgroundColor:
             awayTeamPaletteContrast <= minContrast
@@ -87,18 +87,18 @@ const GenerateImage = ({
         }}
       >
         <Image
-          src={currentGame["Extérieur - Logo (md)"]}
+          src={game["Extérieur - Logo (md)"]}
           width={200}
           height={200}
           alt="Home Picture"
         />
       </div>
       {/* Score */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1/3 h-1/3 bg-primary text-primary-foreground flex items-center justify-center font-bold text-6xl rounded shadow-2xl">
-        {`${currentGame["Domicile - Final"]} - ${currentGame["Extérieur - Final"]}`}
+      <div className="bg-primary text-primary-foreground absolute left-1/2 top-1/2 flex size-1/3 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded text-6xl font-bold shadow-2xl">
+        {`${game["Domicile - Final"]} - ${game["Extérieur - Final"]}`}
       </div>
       {/* Brush au couleur Domicile */}
-      <div className="absolute top-0 left-0 w-1/3 h-1/3">
+      <div className="absolute left-0 top-0 size-1/3">
         <Angle
           color={
             homeTeamPaletteContrast <= minContrast
@@ -111,7 +111,7 @@ const GenerateImage = ({
         />
       </div>
       {/* Brush au couleur Domicile */}
-      <div className="absolute bottom-0 right-0 w-1/3 h-1/3 rotate-180">
+      <div className="absolute bottom-0 right-0 size-1/3 rotate-180">
         <Angle
           color={
             awayTeamPaletteContrast <= minContrast

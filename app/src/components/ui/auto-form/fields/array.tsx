@@ -47,7 +47,7 @@ export default function AutoFormArray({
                 type="button"
                 onClick={() => remove(index)}
               >
-                <Trash className="h-4 w-4" />
+                <Trash className="size-4" />
               </Button>
               <Separator />
             </div>

@@ -1,16 +1,16 @@
 "use client";
 import getGameById from "@/lib/notion/getGameById";
-import { Game } from "@/types/Game";
+import useGameStore from "@/lib/store/game.store";
 import AutoForm, { AutoFormSubmit } from "@ui/auto-form";
-import { Dispatch, SetStateAction } from "react";
 import * as z from "zod";
 
 interface IGameFormProps {
   gamesId: string[];
-  setCurrentGame: Dispatch<SetStateAction<Game | undefined>>;
 }
 
-const GameForm = ({ gamesId, setCurrentGame }: IGameFormProps) => {
+const GameForm = ({ gamesId }: IGameFormProps) => {
+  const setGame = useGameStore((s) => s.setGame);
+
   // Define the form schema using zod
   const formSchema = z.object({
     // Enum will show a select
@@ -37,8 +37,8 @@ const GameForm = ({ gamesId, setCurrentGame }: IGameFormProps) => {
         },
       }}
       onSubmit={async (data) => {
-        const game = await getGameById(data.game)
-        setCurrentGame(game)
+        const game = await getGameById(data.game);
+        setGame(game);
       }}
     >
       {/* 
