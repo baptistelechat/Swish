@@ -20,7 +20,11 @@ const getChampionshipDayNumber = async (page: Page) => {
               .split("/")[3]
               .replaceAll("-", " ")
               .toUpperCase()} - ${
-              championshipPresentation.split("ÈRE")[0].split("ÈME")[0]
+              championshipPresentation
+                .split("ÈRE")[0]
+                .split("ÈME")[0]
+                .split("ER")[0]
+                .split("E")[0]
             }`
           : `${championshipPresentation
               .split(" - ")[0]
@@ -29,6 +33,8 @@ const getChampionshipDayNumber = async (page: Page) => {
                 .split(" - ")[1]
                 .split("ÈRE")[0]
                 .split("ÈME")[0]
+                .split("ER")[0]
+                .split("E")[0]
             }`;
 
         return championshipDayNumber;
